@@ -204,15 +204,28 @@
 })(window.CloudChat = window.CloudChat || {});
 
 (function (CloudChat, undefined) {
+    //jQuery.fn.jquery == "2.0.3"
+    //angular.version
+    //Object {full: "1.0.8", major: 1, minor: 0, dot: 8, codeName: "bubble-burst"}
+
+    var externalTools = [
+        'http://connect.facebook.net/en_US/all.js',
+        'https://apis.google.com/js/client.js',        
+        'http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js'
+    ];
+
+    if((typeof angular == typeof undefined) || (angular && angular.version.full != "1.0.8")){
+        externalTools.push('https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js');
+    }
+
+    if((typeof jQuery == typeof undefined) || (jQuery && jQuery.fn.jquery != "2.0.3")){
+        externalTools.push('http://code.jquery.com/jquery-2.0.3.min.js');
+    }
+
+    externalTools.push('https://storage-cdn.realtime.co/storage/1.0.0/realtime-storage-min.js');
+
     Initializer = {
-        externalTools: [      
-            'http://connect.facebook.net/en_US/all.js',
-            'https://apis.google.com/js/client.js', 
-            'http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js',
-            'https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js',                        
-            'http://code.jquery.com/jquery-2.0.3.min.js',
-            'https://storage-cdn.realtime.co/storage/1.0.0/realtime-storage-min.js'
-        ],
+        externalTools: externalTools,
 
         internalTools: [ 
         ],
