@@ -204,10 +204,6 @@
 })(window.CloudChat = window.CloudChat || {});
 
 (function (CloudChat, undefined) {
-    //jQuery.fn.jquery == "2.0.3"
-    //angular.version
-    //Object {full: "1.0.8", major: 1, minor: 0, dot: 8, codeName: "bubble-burst"}
-
     var externalTools = [
         'http://connect.facebook.net/en_US/all.js',
         'https://apis.google.com/js/client.js',        
@@ -624,6 +620,15 @@
         var subscriptionsBuffer = [];
         var presenceInterval = null;
 
+        function subscribeChannel(channel){
+            if(!realtimeClient.isSubscribed(channel)){
+                realtimeClient.subscribe(channel,true,function(sender,channel,message){
+                    console.log("User connected:", JSON.parse(message));
+                });
+                realtimeClient.send(channel,JSON.stringify(currentUser));
+            }
+        }
+
         loadOrtcFactory(IbtRealTimeSJType, function (factory, error) {
             if (error != null) {
                 alert("Factory error: " + error.message);
@@ -649,18 +654,14 @@
                         realtimeClient.onConnected = function (ortc) {
                             while(subscriptionsBuffer.length > 0){
                                 var channel = subscriptionsBuffer.shift();
-                                if(!realtimeClient.isSubscribed(channel)){
-                                    realtimeClient.subscribe(channel,true,function(){});
-                                }
+                                subscribeChannel(channel);
                             }                            
                         };
 
                         realtimeClient.onReconnected = function (ortc) {
                             while(subscriptionsBuffer.length > 0){
                                 var channel = subscriptionsBuffer.shift();
-                                if(!realtimeClient.isSubscribed(channel)){
-                                    realtimeClient.subscribe(channel,true,function(){});
-                                }
+                                subscribeChannel(channel);
                             }                            
                         };
 
@@ -700,10 +701,8 @@
         CloudChat.EventManager.subscribe("openroom",function(room){  
             if(!realtimeClient.getIsConnected()){
                 subscriptionsBuffer.push(channelPrefix + room.name);
-            } else if (!realtimeClient.isSubscribed(channelPrefix + room.name)){
-                realtimeClient.subscribe(channelPrefix + room.name,true,function(){
-                    
-                });
+            } else {
+                subscribeChannel(channelPrefix + room.name);
             }
 
             var presenceData = {
