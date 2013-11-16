@@ -1,11 +1,13 @@
 Cloud Chat
 =========
 
+**Introduction**
+
 Cloud chat is a javascript chat library that uses angularjs and jquery for user interface and realtime.co framework for messaging and storage.
 
 You can check a live sample here: http://howdoyouphil.blogspot.pt/
 
-Getting started:
+**Getting started**
 
 1 - With 2 lines of html:
 
