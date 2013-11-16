@@ -16,9 +16,11 @@ You can check a live sample here: http://howdoyouphil.blogspot.pt/
 1 - With 2 lines of html:
 
 Refer to sample: [samples/index.html](/samples/index.html)
-	
-	<script type="text/javascript" src="http://dl.dropboxusercontent.com/s/sl5azkks6isi42v/cloudchat.js"></script>
-	<div id="cloudchatcontainer" style="width: 700px; height: 350px;"></div>
+
+```javascript	
+<script type="text/javascript" src="http://dl.dropboxusercontent.com/s/sl5azkks6isi42v/cloudchat.js"></script>
+<div id="cloudchatcontainer" style="width: 700px; height: 350px;"></div>
+```
 	
 2 - Custom html but no javascript
 
@@ -113,8 +115,9 @@ There are different levels of customization you can do. You can customize your c
 
 _Setup_
 
+CloudChat.setup =
 ```json
-CloudChat.setup = {
+{
     security : {
         facebook : {
             appId      : '[ YOUR FACEBOOK APPLICATION ID ]', 
