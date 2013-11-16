@@ -1,7 +1,7 @@
 Cloud Chat
 =========
 
-# **Introduction**
+## **Introduction**
 
 Cloud chat is a javascript chat library that uses _angularjs_ ( https://angularjs.org ) and _jquery_ ( http://jquery.com/ ) for user interface and _realtime.co_ framework ( http://framework.realtime.co ) for messaging and storage.
 
@@ -11,7 +11,7 @@ You can check a live sample here: http://howdoyouphil.blogspot.pt/
 
 =========
 
-# **Getting started**
+## **Getting started**
 
 1 - With 2 lines of html:
 
@@ -110,14 +110,14 @@ Refer to sample: [samples/index-custom.html](/samples/index-custom.html)
 
 =========
 
-**API**
+## **API**
 
-_Overview_
+### _Overview_
 
 The api for cloud chat was designed to be used to customize it.
 There are different levels of customization you can do. You can customize your credentials, using the setup structure that is explained further in this documentation. You can customize the user interface, by designing your own and making the angularjs bindings to the controllers. You can customize how everything interacts using the api methods in your javascript source code or by handling the cloud chat events.
 
-_Setup_
+### _Setup_
 
 ```
 CloudChat.setup = {
@@ -143,7 +143,7 @@ CloudChat.setup = {
 ```
 
 
-_Controllers_
+### _Controllers_
 
 CloudChat.LoginController
 
@@ -155,11 +155,11 @@ CloudChat.LoginController
 		Name: login
 		Parameters: provider (facebook, google, or guest)
 
-_Methods_
+### _Methods_
 
-_Events_
+### _Events_
 
-_Extra_
+### _Extra_
 
 NOTE: CloudChat uses Realtime framework ( http://framework.realtime.co ) as a backend as a service
 
