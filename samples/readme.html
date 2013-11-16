@@ -1,0 +1,30 @@
+<h1>Cloud Chat</h1>
+<p>Cloud chat is a javascript chat library that uses angularjs and jquery for user interface and realtime.co framework for messaging and storage.</p>
+<p>Getting started:</p>
+<p>1 - With 2 lines of html:</p>
+<pre><code>&lt;script type="text/javascript" src="http://dl.dropboxusercontent.com/s/sl5azkks6isi42v/cloudchat.js"&gt;&lt;/script&gt;
+&lt;div id="cloudchatcontainer" style="width: 700px; height: 350px;"&gt;&lt;/div&gt;
+</code></pre>
+<p>2 - Custom html but no javascript</p>
+<pre><code>&lt;script type="text/javascript" src="http://dl.dropboxusercontent.com/s/sl5azkks6isi42v/cloudchat.js"&gt;&lt;/script&gt;
+&lt;div data-ng-controller="CloudChat.UserController" style="width: 700px; height: 350px; "&gt;
+    &lt;button data-ng-controller="CloudChat.LoginController" data-ng-click="login('guest')"&gt;login as guest&lt;/button&gt;
+    &lt;/br&gt;
+    &lt;input data-ng-model="messageText" placeholder="Type your message here" type="text" /&gt;
+    &lt;button data-ng-click="send()"&gt;Send with {{ user.name }}&lt;/button&gt;
+   &lt;/br&gt;
+   &lt;div data-ng-controller="CloudChat.ChatController"&gt;
+        &lt;div data-ng-controller="CloudChat.RoomsController"&gt;
+            &lt;button data-ng-click="open(roomname)"&gt;{{ roomname }}&lt;/button&gt;
+            &lt;input data-ng-model="roomname" placeholder="Room name" type="text" /&gt;
+        &lt;/div&gt;
+        &lt;/br&gt;
+        &lt;ul  style="list-style-type: none; margin-left: -30px; margin-top: 0px; padding-right: 32px; padding-left: 32px;"&gt;
+            &lt;li data-ng-repeat="message in currentRoomMessages"&gt;
+                {{ message.timestamp | date:"HH:mm:ss" }} {{ message.user }} : {{ message.content }}
+            &lt;/li&gt;
+        &lt;/ul&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+<p>NOTE: CloudChat uses Realtime framework ( http://framework.realtime.co ) as a backend as a service</p>
