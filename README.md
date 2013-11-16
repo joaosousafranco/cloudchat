@@ -53,7 +53,7 @@ Refer to sample: [samples/index-custom-nojavascript.html](/samples/index-custom-
 
 Refer to sample: [samples/index-custom.html](/samples/index-custom.html)
 	
-```javascript	
+```	
 <html data-ng-app="cloudchat-custom">
 <script type="text/javascript" src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
