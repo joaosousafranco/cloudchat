@@ -11,11 +11,9 @@ You can check a live sample here: http://howdoyouphil.blogspot.pt/
 
 1 - With 2 lines of html:
 	
-	```
 	<script type="text/javascript" src="http://dl.dropboxusercontent.com/s/sl5azkks6isi42v/cloudchat.js"></script>
 	<div id="cloudchatcontainer" style="width: 700px; height: 350px;"></div>
-	```
-
+	
 2 - Custom html but no javascript
 
 	<script type="text/javascript" src="http://dl.dropboxusercontent.com/s/sl5azkks6isi42v/cloudchat.js"></script>
