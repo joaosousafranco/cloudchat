@@ -8,12 +8,16 @@
             google : {
                 client_id: '532324559552.apps.googleusercontent.com'
             }
-        },
+        },        
         realtime : {
             applicationKey : "Ugrahe",
             token : "cloud-chat",
             url: "http://ortc-developers.realtime.co/server/2.1"
-        }
+        },
+        storage : {
+            initialChunk : 5,
+            order : "desc"
+        }        
     }
 })(window.CloudChat = window.CloudChat || {});
 
@@ -268,6 +272,7 @@
 
     Initializer.load(function(){        
         CloudChat.Chat.render();
+        CloudChat.EventManager.publish("loaded");
     });
 
     Chat = function(){
@@ -342,13 +347,13 @@
             + '',
 
         render : function(){
-            if($("#cloudchatcontainer")){
-                $("#cloudchatcontainer").html(this.loginView + this.mainView);
-
-                var angularAppAttribute = $("html").attr("ng-app") || $("html").attr("data-ng-app");
-                if (typeof angularAppAttribute === 'undefined' || angularAppAttribute === false) {
-                    $("html").attr("data-ng-app",""); 
-                }
+            var angularAppAttribute = $("html").attr("ng-app") || $("html").attr("data-ng-app");
+            if (typeof angularAppAttribute === 'undefined' || angularAppAttribute === false) {
+                $("html").attr("data-ng-app",""); 
+            }
+            
+            if($("#cloudchatcontainer") && $("#cloudchatcontainer").length){
+                $("#cloudchatcontainer").html(this.loginView + this.mainView);                
                 
                 $("#chat-messagetextbox").keyup(function(event){
                     if(event.keyCode == 13){
@@ -400,7 +405,7 @@
                 });
 
                 CloudChat.EventManager.subscribe("loginfailed",function(provider){
-                    alert("Failed to login with",provider);
+                    console.error("Failed to login with",provider);
                 });           
             }
         }
@@ -410,18 +415,24 @@
 
     CloudChat.SecurityService = {
         login : function(provider){
-            CloudChat[provider].load(function(loggedUser){
-                if(loggedUser){
-                    CloudChat.EventManager.publish("loggedin",loggedUser);                       
-                }else{
-                    CloudChat.EventManager.publish("loginfailed",provider);   
-                }                
-            }.bind(this));
+            if(CloudChat[provider]){
+                CloudChat[provider].load(function(loggedUser){
+                    if(loggedUser){
+                        CloudChat.EventManager.publish("loggedin",loggedUser);                       
+                    }else{
+                        CloudChat.EventManager.publish("loginfailed",provider);   
+                    }                
+                }.bind(this));    
+            }else{
+                CloudChat.EventManager.publish("loginfailed",provider);   
+            }
         }
     }
 
     CloudChat.RealtimeStorageService = function(configuration){
-        var roomsTableRefs = {};
+        var roomsTableRefs = {};        
+        var initialChunk = CloudChat.setup.storage.initialChunk;        
+        var order = CloudChat.setup.storage.order;
 
         var client = Realtime.Storage.create(
             configuration,
@@ -432,19 +443,29 @@
         );
 
         CloudChat.EventManager.subscribe("savemessage",function(message){
-            var messagesTableRef = client.table("chat-messages");
+            if(message && message.content && message.room){
+                var messagesTableRef = client.table("chat-messages");
 
-            messagesTableRef.push(message,null
-            ,function(error){
-                console.log("Error in saving message:",error);
-            }.bind(this)); 
+                messagesTableRef.push(message,null
+                ,function(error){
+                    console.log("Error in saving message:",error);
+                }.bind(this));     
+            }
         }.bind(this));
 
         CloudChat.EventManager.subscribe("openroom",function(room){
             var messagesTableRef;
 
             if(!roomsTableRefs[room.name]){
-                roomsTableRefs[room.name] = messagesTableRef = client.table("chat-messages").equals({item: "room", value: room.name }).limit(5).desc();
+                roomsTableRefs[room.name] = messagesTableRef = client.table("chat-messages").equals({item: "room", value: room.name });
+
+                if(initialChunk > 0){
+                    roomsTableRefs[room.name] = messagesTableRef = messagesTableRef.limit(initialChunk);                    
+                }
+
+                if(order && messagesTableRef[order]){
+                    roomsTableRefs[room.name] = messagesTableRef = messagesTableRef[order]();                    
+                }
 
                 messagesTableRef.on("put",function(itemSnapshot){            
                     if(itemSnapshot && itemSnapshot.val()){
@@ -459,9 +480,11 @@
 
             if(roomsTableRefs[room.name]){
                 messagesTableRef = roomsTableRefs[room.name];
-                messagesTableRef.off();
+                messagesTableRef.off("put",room.name);
                 delete roomsTableRefs[room.name];
             }
+
+            CloudChat.EventManager.publish("closedroom", room);
         }.bind(this));
     }
 
@@ -486,6 +509,10 @@
                 applicationKey: CloudChat.setup.realtime.applicationKey,
                 authenticationToken: CloudChat.setup.realtime.token, 
             }); 
+
+            if(!$scope.$$phase) {
+                $scope.$apply();
+            } 
         });      
 
         $scope.send = function(){
@@ -548,6 +575,10 @@
             }
             $scope.currentRoom = null;
             $scope.currentRoomMessages = [];
+
+            if(!$scope.$$phase) {
+                $scope.$apply();
+            } 
         });
     }
 
@@ -614,6 +645,7 @@
     }
 
     CloudChat.UsersController = function($scope){
+        $scope.users = [];        
         var channelPrefix = "cloudchat:";
         var currentUser = null;
         var realtimeClient = null;
@@ -623,7 +655,22 @@
         function subscribeChannel(channel){
             if(!realtimeClient.isSubscribed(channel)){
                 realtimeClient.subscribe(channel,true,function(sender,channel,message){
-                    console.log("User connected:", JSON.parse(message));
+                    var subscribedUser = JSON.parse(message);
+                    if(subscribedUser.id != currentUser.id || subscribedUser.provider != currentUser.provider){
+                        var userfound = false;
+                        for(var userIndex in $scope.users){
+                            var user = $scope.users[userIndex];
+                            if(user.id == subscribedUser.id && user.provider == subscribedUser.provider){
+                                userfound = true;
+                                break;
+                            }                            
+                        }
+
+                        if(!userfound){
+                            $scope.users.push(subscribedUser);
+                            $scope.$apply();
+                        }
+                    }                    
                 });
                 realtimeClient.send(channel,JSON.stringify(currentUser));
             }
@@ -631,7 +678,7 @@
 
         loadOrtcFactory(IbtRealTimeSJType, function (factory, error) {
             if (error != null) {
-                alert("Factory error: " + error.message);
+                console.error("Factory error: " + error.message);
             } else {
 
                 if (factory != null) {                    
@@ -690,8 +737,6 @@
             });
         }
 
-        $scope.users = [];
-
         CloudChat.EventManager.subscribe("closeroom",function(room){
             if (realtimeClient.isSubscribed(channelPrefix + room.name)){
                 realtimeClient.unsubscribe(channelPrefix + room.name);
@@ -725,21 +770,184 @@
 })(window.CloudChat = window.CloudChat || {});
 
 (function (CloudChat, undefined) {
-    CloudChat.api = {
-        login : function(provider,onLoggedin,onLoginFailed){
+    var Room = function(name){
+        this.name = name;
+        this.active = true;
 
+        this.roomOpened = null;
+        this.roomClosed = null;
+        this.messageReceived = null;
+    }
+
+    Room.prototype = {
+        name : null,
+        active : false,
+        opened : function(callback){
+            this.roomOpened = callback;
+            return this;
         },
 
-        openRoom : function(name,onOpened,onClosed,onMessage){
+        closed : function(callback){
+            this.roomClosed = callback;
+            return this;
+        },
 
+        onMessage : function(callback){
+            this.messageReceived = callback;
+            return this;
+        }
+    }
+
+    var Api = function(configuration){
+        if(Api.caller != Api.getInstance){
+            throw new Error("This object cannot be instanciated");
+        }
+
+        this.loggedin = null;
+        this.loginfailed = null;
+        this.rooms = {};
+
+
+        CloudChat.EventManager.subscribe("loggedin",function(user){
+            if(this.loggedin){
+                this.loggedin(user);
+            }
+        }.bind(this));
+
+        CloudChat.EventManager.subscribe("loginfailed",function(provider){
+            if(this.loginfailed){
+                this.loginfailed(provider);
+            }
+        }.bind(this));
+
+        CloudChat.EventManager.subscribe("roomopened",function(room){ 
+            if(this.rooms[room.name] && this.rooms[room.name].roomOpened){
+                this.rooms[room.name].roomOpened(room);
+            }
+        }.bind(this));
+
+        CloudChat.EventManager.subscribe("closedroom",function(room){ 
+            if(this.rooms[room.name] && this.rooms[room.name].roomClosed){
+                this.rooms[room.name].roomClosed(room);
+            }
+        }.bind(this));
+
+        CloudChat.EventManager.subscribe("receivedmessage",function(message){   
+             if(this.rooms[message.room] && this.rooms[message.room].messageReceived){
+                this.rooms[message.room].messageReceived(this.rooms[message.room],message);
+             }
+        }.bind(this));
+    };
+
+    Api.instance = null;
+
+    Api.getInstance = function(){
+        if(this.instance === null){
+            this.instance = new Api();
+        }
+        return this.instance;
+    };
+
+    Api.prototype = {
+        login : function(provider){
+            setTimeout(function(){
+                CloudChat.SecurityService.login(provider);
+            },1);            
+
+            return this;
+        },
+
+        openRoom : function(name){
+            if(!this.rooms[name]){
+                this.rooms[name] = new Room(name);
+            }
+
+            this.rooms[name].active = true;
+            setTimeout(function(){
+                CloudChat.EventManager.publish("openroom",this.rooms[name]); 
+                CloudChat.EventManager.publish("roomopened",this.rooms[name]);
+            }.bind(this),1);
+
+            return this.rooms[name];
         },
 
         closeRoom : function(name){
+            var room = null;
 
+            if(this.rooms[name]){
+                room = this.rooms[name];
+
+                setTimeout(function(){
+                    CloudChat.EventManager.publish("closeroom",this.rooms[name]); 
+                    delete this.rooms[name];
+                }.bind(this),1);                
+            }
+
+            return room;
+        },
+
+        sendMessage : function(user,room,messageText){
+            setTimeout(function(){
+                var message = {
+                    content : messageText,
+                    user : user.name,
+                    userId : user.id,
+                    userProvider : user.provider,
+                    timestamp : +new Date(),
+                    room : room,
+                    id : (+new Date()) + '-' + CloudChat.Strings.guid() 
+                };
+                CloudChat.EventManager.publish("savemessage",message);
+            },1);            
+            return this;
+        },
+
+        onLoggedin : function(callback){
+            this.loggedin = callback;
+            return this;
+        },
+
+        onLoginFailed : function(callback){
+            this.loginfailed = callback;
+            return this;
+        }
+    };
+
+    CloudChat.api = {
+        instance : function(){
+            return Api.getInstance();
+        },
+
+        login : function(provider){
+            return Api.getInstance().login(provider);
+        },
+
+        openRoom : function(name){
+            return Api.getInstance().openRoom(name);
+        },
+
+        closeRoom : function(name){
+            return Api.getInstance().closeRoom(name);
         },
 
         sendMessage : function(user,room,message){
+            return Api.getInstance().sendMessage(user,room,message);
+        },
 
+        onLoggedin : function(callback){
+            return Api.getInstance().onLoggedin(callback);
+        },
+
+        onLoginFailed : function(callback){
+            return Api.getInstance().onLoginFailed(callback);
+        },
+
+        loaded : function(callback){
+            CloudChat.EventManager.subscribe("loaded",function(){   
+                if(callback){
+                    callback();
+                }
+            });
         }
     }
 })(window.CloudChat = window.CloudChat || {});
