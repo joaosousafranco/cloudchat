@@ -17,7 +17,7 @@ You can check a live sample here: http://howdoyouphil.blogspot.pt/
 
 Refer to sample: [samples/index.html](/samples/index.html)
 
-```javascript	
+```html	
 <script type="text/javascript" src="http://dl.dropboxusercontent.com/s/sl5azkks6isi42v/cloudchat.js"></script>
 <div id="cloudchatcontainer" style="width: 700px; height: 350px;"></div>
 ```
@@ -26,7 +26,7 @@ Refer to sample: [samples/index.html](/samples/index.html)
 
 Refer to sample: [samples/index-custom-nojavascript.html](/samples/index-custom-nojavascript.html)
 
-```javascript	
+```html	
 <script type="text/javascript" src="http://dl.dropboxusercontent.com/s/sl5azkks6isi42v/cloudchat.js"></script>
 <div data-ng-controller="CloudChat.UserController" style="width: 700px; height: 350px; ">
 	<button data-ng-controller="CloudChat.LoginController" data-ng-click="login('guest')">login as guest</button>
@@ -145,6 +145,16 @@ CloudChat.setup = {
 
 _Controllers_
 
+*CloudChat.LoginController*
+
+	Properties:
+		Name: loggedin
+		Value: true or false
+
+	Methods:
+		Name: login
+		Parameters: provider (facebook, google, or guest)
+	
 _Methods_
 
 _Events_
