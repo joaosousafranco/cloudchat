@@ -7,6 +7,8 @@ Cloud chat is a javascript chat library that uses angularjs and jquery for user 
 
 You can check a live sample here: http://howdoyouphil.blogspot.pt/
 
+=========
+
 **Getting started**
 
 1 - With 2 lines of html:
@@ -17,6 +19,8 @@ Refer to sample: [samples/index.html](/samples/index.html)
 	<div id="cloudchatcontainer" style="width: 700px; height: 350px;"></div>
 	
 2 - Custom html but no javascript
+
+Refer to sample: [samples/index-custom-nojavascript.html](/samples/index-custom-nojavascript.html)
 
 	<script type="text/javascript" src="http://dl.dropboxusercontent.com/s/sl5azkks6isi42v/cloudchat.js"></script>
 	<div data-ng-controller="CloudChat.UserController" style="width: 700px; height: 350px; ">
@@ -40,6 +44,8 @@ Refer to sample: [samples/index.html](/samples/index.html)
     </div>
 
 3 - Integrate with your angularjs application
+
+Refer to sample: [samples/index-custom.html](/samples/index-custom.html)
 	
 	<html data-ng-app="cloudchat-custom">
 	<script type="text/javascript" src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
@@ -93,6 +99,16 @@ Refer to sample: [samples/index.html](/samples/index.html)
    			</li>
    		</ul>
     </div>
+
+=========
+
+**API**
+
+_Controllers_
+
+_Methods_
+
+_Events_
 
 
 
