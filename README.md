@@ -113,6 +113,7 @@ There are different levels of customization you can do. You can customize your c
 
 _Setup_
 
+```json
 CloudChat.setup = {
     security : {
         facebook : {
@@ -133,6 +134,7 @@ CloudChat.setup = {
         order : "[ THE MESSAGES ORDER (desc or asc) ]"
     }        
 }
+```
 
 
 _Controllers_
