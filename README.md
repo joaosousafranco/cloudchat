@@ -155,6 +155,16 @@ CloudChat.LoginController
 		Name: login
 		Parameters: provider (facebook, google, or guest)
 
+CloudChat.UserController
+
+	Properties:
+		Name: user
+		Value: object
+
+	Methods:
+		Name: send
+		Model: messageText
+
 ### _Methods_
 
 ### _Events_
