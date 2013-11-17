@@ -9,7 +9,6 @@ Authentication is provided by _facebook_ api and _google_ api. Looking forward t
 
 You can check a live sample here: http://howdoyouphil.blogspot.pt/
 
-=========
 
 ## **Getting started**
 
@@ -108,14 +107,13 @@ Refer to sample: [samples/index-custom.html](/samples/index-custom.html)
 </div>
 ```
 
-=========
 
 ## **API**
 
 ### _Overview_
 
 The api for cloud chat was designed to be used to customize it.
-There are different levels of customization you can do. You can customize your credentials, using the setup structure that is explained further in this documentation. You can customize the user interface, by designing your own and making the angularjs bindings to the controllers. You can customize how everything interacts using the api methods in your javascript source code or by handling the cloud chat events.
+There are different levels of customization you can do. You can customize your credentials, using the setup structure that is explained further. You can customize the user interface, by designing your own and making the angularjs bindings to the controllers. You can customize how everything interacts using the api methods in your javascript source code or by handling the cloud chat events.
 
 ### _Setup_
 
@@ -153,7 +151,7 @@ CloudChat.LoginController
 
 	Methods:
 		Name: login
-		Parameters: provider (facebook, google, or guest)
+		Parameters: provider (string) (facebook, google, or guest)
 
 CloudChat.UserController
 
@@ -165,7 +163,96 @@ CloudChat.UserController
 		Name: send
 		Model: messageText
 
+CloudChat.ChatController
+	
+	Properties:
+		Name: user
+		Value: object
+
+		Name: messages
+		Value: dictionary (room,messages)
+
+		Name: currentRoom
+		Value: string
+
+		Name: currentRoomMessages
+		Value: array	
+
+CloudChat.RoomsController
+	
+	Properties:
+		Name: rooms
+		Value: array
+
+	Methods:
+		Name: open
+		Parameters: room
+
+		Name: close
+		Parameters: room	
+
+CloudChat.UsersController
+	
+	Properties:
+		Name: users
+		Value: array
+
 ### _Methods_
+
+instance
+
+	Gets the cloud chat api instance
+
+	Returns: cloud chat api instance
+
+login
+
+	Authenticates in cloud chat with the specified provider
+
+	Parameters: provider (string) (facebook, google, or guest)
+	Returns: cloud chat api instance
+
+onLoggedin 
+	
+	Executes the specified callback on a successful login
+
+	Parameters: callback ( function(user) )
+	Returns: cloud chat api instance
+
+onLoginFailed 
+
+	Executes the specified callback on a failed login
+
+	Parameters: callback ( function(provider) )
+	Returns: cloud chat api instance
+
+openRoom
+
+	Opens a new room in cloud chat and sets it as active
+
+	Parameters: room name (string)
+	Returns: room instance
+
+closeRoom
+
+	Closes the room with the specified name in cloud chat.
+
+	Parameters: room name (string)
+	Returns: room instance	
+
+sendMessage
+	
+	Sends a message to the specified room associated to the specified user
+
+	Parameters: user (object), room name (string), message (string)
+	Returns: cloud chat api instance
+
+loaded
+
+	Executes the specified callback after cloud chat is ready	
+
+	Parameters: callback ( function() )
+	Returns: cloud chat api instance
 
 ### _Events_
 
