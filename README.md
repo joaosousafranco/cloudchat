@@ -199,55 +199,55 @@ CloudChat.UsersController
 
 ### _Methods_
 
-instance
+CloudChat.api.instance
 
 	Gets the cloud chat api instance
 
 	Returns: cloud chat api instance
 
-login
+CloudChat.api.login
 
 	Authenticates in cloud chat with the specified provider
 
 	Parameters: provider (string) (facebook, google, or guest)
 	Returns: cloud chat api instance
 
-onLoggedin 
+CloudChat.api.onLoggedin 
 	
 	Executes the specified callback on a successful login
 
 	Parameters: callback ( function(user) )
 	Returns: cloud chat api instance
 
-onLoginFailed 
+CloudChat.api.onLoginFailed 
 
 	Executes the specified callback on a failed login
 
 	Parameters: callback ( function(provider) )
 	Returns: cloud chat api instance
 
-openRoom
+CloudChat.api.openRoom
 
 	Opens a new room in cloud chat and sets it as active
 
 	Parameters: room name (string)
 	Returns: room instance
 
-closeRoom
+CloudChat.api.closeRoom
 
 	Closes the room with the specified name in cloud chat.
 
 	Parameters: room name (string)
 	Returns: room instance	
 
-sendMessage
+CloudChat.api.sendMessage
 	
 	Sends a message to the specified room associated to the specified user
 
 	Parameters: user (object), room name (string), message (string)
 	Returns: cloud chat api instance
 
-loaded
+CloudChat.api.loaded
 
 	Executes the specified callback after cloud chat is ready	
 
