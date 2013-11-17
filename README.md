@@ -256,7 +256,70 @@ loaded
 
 ### _Events_
 
+NOTE: In order to handle the following events you will need to use CloudChat.EventManager that is described further
+
+loaded
+
+	Parameters:
+
+loggedin
+
+	Parameters: user (object)
+
+loginfailed
+
+	Parameters: provider (string)
+
+openroom
+
+	Parameters: room (object)
+
+closeroom
+
+	Parameters: room (object)
+
+roomopened
+
+	Parameters: room (object)
+
+closedroom
+
+	Parameters: room (object)
+
+sendmessage
+
+	Parameters: message (string)
+
+savemessage
+
+	Parameters: message (object)
+
+receivedmessage
+
+	Parameters: message (object)
+
 ### _Extra_
+
+CloudChat.EventManager
+
+	Methods:
+		Name: subscribe
+		Parameters: event name (string), callback (function)
+
+		Name: unsubscribe
+		Parameters: event name (string)
+		Note: unsubscribes all subscriptions
+
+		Name: publish
+		Parameters: event name (string), optional parameters		
+
+CloudChat.Strings
+
+	Methods:
+		Name: guid
+		Returns: string
+
+=========
 
 NOTE: CloudChat uses Realtime framework ( http://framework.realtime.co ) as a backend as a service
 
