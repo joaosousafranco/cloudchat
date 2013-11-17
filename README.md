@@ -3,7 +3,7 @@ Cloud Chat
 
 ## **Introduction**
 
-Cloud chat is a javascript chat library that uses _angularjs_ ( https://angularjs.org ) and _jquery_ ( http://jquery.com/ ) for user interface and _realtime.co_ framework ( http://framework.realtime.co ) for messaging and storage.
+Cloud chat is a javascript chat library that uses _angularjs_ ( http://angularjs.org ) and _jquery_ ( http://jquery.com/ ) for user interface and _realtime.co_ framework ( http://framework.realtime.co ) for messaging and storage.
 
 Authentication is provided by _facebook_ api and _google_ api. Looking forward to add more providers.
 
