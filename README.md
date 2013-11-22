@@ -176,13 +176,13 @@ CloudChat.ChatController
 		Value: string
 
 		Name: currentRoomMessages
-		Value: array	
+		Value: message array	
 
 CloudChat.RoomsController
 	
 	Properties:
 		Name: rooms
-		Value: array
+		Value: room array
 
 	Methods:
 		Name: open
@@ -196,6 +196,51 @@ CloudChat.UsersController
 	Properties:
 		Name: users
 		Value: array
+
+### _Data Types_
+
+user
+
+	{
+        name : String,
+        provider : String,
+        email : String,
+        link : String,
+        id : String,
+        token : String
+    }
+
+room
+
+	{ 
+		name: String, 
+		active: boolean
+	}
+
+message
+
+	{
+		room : String,
+		id : String,
+        content : String,
+        user : String,
+        userId : String,
+        userProvider : String,
+        timestamp : integer
+    }
+
+### _Storage Schema_
+	
+Table _chat-messages_
+	
+	Primary: room (String)	
+	Secondary: id (String)	
+	Attributes: 
+		content (String)	
+		timestamp (Number)	
+		user (String)	
+		userId (String)	
+		userProvider (String)
 
 ### _Methods_
 
@@ -231,14 +276,14 @@ CloudChat.api.openRoom
 	Opens a new room in cloud chat and sets it as active
 
 	Parameters: room name (string)
-	Returns: room instance
+	Returns: api room instance
 
 CloudChat.api.closeRoom
 
 	Closes the room with the specified name in cloud chat.
 
 	Parameters: room name (string)
-	Returns: room instance	
+	Returns: api room instance	
 
 CloudChat.api.sendMessage
 	
