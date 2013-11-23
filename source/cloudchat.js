@@ -147,8 +147,8 @@
                 provider : 'guest',
                 email : null,
                 link : null,
-                id : null,
-                token : null
+                id : CloudChat.Strings.guid(),
+                token : CloudChat.Strings.guid()
             });
         }
     }
@@ -270,13 +270,16 @@
         }
     };
 
-    Initializer.load(function(){        
-        CloudChat.Chat.render();
-        CloudChat.EventManager.publish("loaded");
-    });
-
     Chat = function(){
+        var angularAppAttribute = $("html").attr("ng-app") || $("html").attr("data-ng-app");
+        if (typeof angularAppAttribute === 'undefined' || angularAppAttribute === false) {
+            $("html").attr("data-ng-app",""); 
+        }
 
+        Initializer.load(function(){        
+            CloudChat.Chat.render();
+            CloudChat.EventManager.publish("loaded");
+        });
     }
 
     Chat.prototype = {
@@ -347,11 +350,6 @@
             + '',
 
         render : function(){
-            var angularAppAttribute = $("html").attr("ng-app") || $("html").attr("data-ng-app");
-            if (typeof angularAppAttribute === 'undefined' || angularAppAttribute === false) {
-                $("html").attr("data-ng-app",""); 
-            }
-            
             if($("#cloudchatcontainer") && $("#cloudchatcontainer").length){
                 $("#cloudchatcontainer").html(this.loginView + this.mainView);                
                 
