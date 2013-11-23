@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+
+  <!-- http://html-generator.weebly.com/css-speech-bubble-generator.html -->
+  <script type="text/javascript" src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+
+  <script type="text/javascript" src="../../source/cloudchat.js"></script>
+
+  <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="http://netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
+
+  <style>
+    .bubble 
+    {
+      width: 360px;
+      min-height: 40px;
+      padding: 0px;
+      background: #F7F7F7;
+      -webkit-border-radius: 4px;
+      -moz-border-radius: 4px;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar {
+        width: 12px;
+    }
+    ::-webkit-scrollbar-track {
+        background-color: #eaeaea;
+        border-left: 1px solid #ccc;
+    }
+    ::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: #aaa;
+    } 
+  </style>
+
+  <script type="text/javascript">
+    function scrollMessagesDown(){
+      setTimeout(function(){
+          var $target = $('#chat-messsages'); 
+          $target.animate({scrollTop: $target.height()}, 1000);
+          setTimeout(function(){
+              $target.stop();
+          },1500);                    
+      },50);
+    }
+
+    CloudChat.api.onLoggedin(function(user){
+      CloudChat.api.openRoom("home")
+      .onMessage(function(room,message){
+        scrollMessagesDown(); 
+      });
+    });
+  </script>
+</head>
+<body style="padding: 40px">    
+    <div data-ng-controller="CloudChat.LoginController">
+        <span data-ng-show="!loggedin" data-ng-click="login('guest')" style="cursor: pointer;display: inline-block;padding: 15px; width: 75px; height: 20px;border: 1px solid gray; display: none">guest</span>
+    
+        <div data-ng-controller="CloudChat.UserController" style="display: none"></div>
+
+        <div data-ng-show="loggedin" style="display: none; width: 600px ">
+          <div id="chat-messsages" data-ng-controller="CloudChat.ChatController" style="float: left;padding-bottom: 3px; overflow: auto; width: 400px; height: 250px; border: 1px solid #eaeaea; background-color: #F9F9F9">
+           <ul style="list-style-type: none; margin-left: -20px; margin-top: 0px; padding-right: 32px; padding-left: 32px;">
+             <li data-ng-repeat="message in currentRoomMessages" style="float: left;">                    
+               <div style="padding: 5px; margin-top: 3px; width: 370px">
+                    <div>
+                      [{{ message.timestamp | date:"HH:mm:ss" }}] <span data-ng-style="{ 'color': (user.provider + user.id) == (message.userId + message.userProvider) && 'darkblue' || 'blue' }">{{ message.user }}<span>
+                    </div>                   
+                    <hr style="margin: 0px; padding: 0px; margin-bottom: 4px"/>
+                    <div>
+                      {{ message.content }}
+                    </div>
+               </div>
+             </li>
+           </ul>
+          </div>
+          <div data-ng-controller="CloudChat.UsersController" style="height: 150px; float: right">
+            <ul style="list-style-type: none; margin-left: -38px; margin-top: 0px">                   
+                <li style="margin-left: 2px; margin-right: 2px; margin-top: 10px; background-color: #dddddd" data-ng-repeat="user in users">
+                    <img style="vertical-align:middle;" src="http://www.experienceourenergy.com.br/public/img/interface/icon-facebook.png" data-ng-show="user.provider == 'facebook'" ></img> 
+                    <img style="vertical-align:middle;" src="http://www.videosoft.com.br/images/icn_google.png" data-ng-show="user.provider == 'google'"></img> 
+                    <img style="vertical-align:middle;" src="http://icons.iconarchive.com/icons/jeanette-foshee/simpsons-05/24/Simpsons-Family-Young-Abe-Simpson-icon.png" data-ng-show="user.provider == 'guest'"></img> 
+                    <a target="_blank" style="vertical-align:middle;text-decoration: none; color:inherit;" href="{{ user.link }}">{{ user.name }}</a>
+                </li>
+            </ul>  
+          </div>
+        </div>
+    </div>
+</body>
+</html>
