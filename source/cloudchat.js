@@ -558,11 +558,6 @@
             $scope.currentRoom = room.name;
             if(!$scope.messages[room.name]){
                 $scope.messages[room.name] = [];
-                $scope.messages[room.name].push({
-                    content : "You just entered room: " + room.name,
-                    timestamp : +new Date(),
-                    room : room.name
-                });
             }
             $scope.currentRoomMessages = $scope.messages[room.name];
         });
@@ -674,46 +669,48 @@
             }
         }
 
-        loadOrtcFactory(IbtRealTimeSJType, function (factory, error) {
-            if (error != null) {
-                console.error("Factory error: " + error.message);
-            } else {
+        CloudChat.EventManager.subscribe("loaded",function(){
+            loadOrtcFactory(IbtRealTimeSJType, function (factory, error) {
+                if (error != null) {
+                    console.error("Factory error: " + error.message);
+                } else {
 
-                if (factory != null) {                    
-                    realtimeClient = factory.createClient();                
+                    if (factory != null) {                    
+                        realtimeClient = factory.createClient();                
 
-                    CloudChat.EventManager.subscribe("loggedin",function(user){
-                        currentUser = {
-                            name : user.name,
-                            provider : user.provider,
-                            id : user.id,
-                            link : user.link                           
-                        };
-                        realtimeClient.setConnectionMetadata(JSON.stringify(currentUser));
-                        realtimeClient.setClusterUrl(CloudChat.setup.realtime.url);
+                        CloudChat.EventManager.subscribe("loggedin",function(user){
+                            currentUser = {
+                                name : user.name,
+                                provider : user.provider,
+                                id : user.id,
+                                link : user.link                           
+                            };
+                            realtimeClient.setConnectionMetadata(JSON.stringify(currentUser));
+                            realtimeClient.setClusterUrl(CloudChat.setup.realtime.url);
 
-                        realtimeClient.onException = function (ortc, exception) {
-                            console.error(exception);
-                        };
+                            realtimeClient.onException = function (ortc, exception) {
+                                console.error(exception);
+                            };
 
-                        realtimeClient.onConnected = function (ortc) {
-                            while(subscriptionsBuffer.length > 0){
-                                var channel = subscriptionsBuffer.shift();
-                                subscribeChannel(channel);
-                            }                            
-                        };
+                            realtimeClient.onConnected = function (ortc) {
+                                while(subscriptionsBuffer.length > 0){
+                                    var channel = subscriptionsBuffer.shift();
+                                    subscribeChannel(channel);
+                                }                            
+                            };
 
-                        realtimeClient.onReconnected = function (ortc) {
-                            while(subscriptionsBuffer.length > 0){
-                                var channel = subscriptionsBuffer.shift();
-                                subscribeChannel(channel);
-                            }                            
-                        };
+                            realtimeClient.onReconnected = function (ortc) {
+                                while(subscriptionsBuffer.length > 0){
+                                    var channel = subscriptionsBuffer.shift();
+                                    subscribeChannel(channel);
+                                }                            
+                            };
 
-                        realtimeClient.connect(CloudChat.setup.realtime.applicationKey,CloudChat.setup.realtime.token);
-                    });
-                }
-            }                                
+                            realtimeClient.connect(CloudChat.setup.realtime.applicationKey,CloudChat.setup.realtime.token);
+                        });
+                    }
+                }                                
+            });
         });
 
         function checkPresence(presenceData){
