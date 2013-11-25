@@ -36,6 +36,51 @@
     ::-webkit-scrollbar-thumb:hover {
       background-color: #aaa;
     } 
+
+    .button {
+      -moz-box-shadow:inset 0px 1px 0px 0px #ffffff;
+      -webkit-box-shadow:inset 0px 1px 0px 0px #ffffff;
+      box-shadow:inset 0px 1px 0px 0px #ffffff;
+      background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf) );
+      background:-moz-linear-gradient( center top, #ededed 5%, #dfdfdf 100% );
+      filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf');
+      background-color:#ededed;
+      -webkit-border-top-left-radius:0px;
+      -moz-border-radius-topleft:0px;
+      border-top-left-radius:0px;
+      -webkit-border-top-right-radius:0px;
+      -moz-border-radius-topright:0px;
+      border-top-right-radius:0px;
+      -webkit-border-bottom-right-radius:0px;
+      -moz-border-radius-bottomright:0px;
+      border-bottom-right-radius:0px;
+      -webkit-border-bottom-left-radius:0px;
+      -moz-border-radius-bottomleft:0px;
+      border-bottom-left-radius:0px;
+      text-indent:0;
+      border:1px solid #dcdcdc;
+      display:inline-block;
+      color:#777777;
+      font-family:Verdana;
+      font-size:11px;
+      font-weight:bold;
+      font-style:normal;
+      height:20px;
+      line-height:20px;
+      width:100px;
+      text-decoration:none;
+      text-align:center;
+      text-shadow:1px 1px 0px #ffffff;
+    }
+    .button:hover {
+      background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #dfdfdf), color-stop(1, #ededed) );
+      background:-moz-linear-gradient( center top, #dfdfdf 5%, #ededed 100% );
+      filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#dfdfdf', endColorstr='#ededed');
+      background-color:#dfdfdf;
+    }.button:active {
+      position:relative;
+      top:1px;
+    }
   </style>
 
   <script type="text/javascript">
@@ -50,26 +95,74 @@
     }
 
     CloudChat.api.onLoggedin(function(user){
+
+      $("#chat-messagetextbox").keyup(function(event){
+          if(event.keyCode == 13){
+              $("#chat-sendbutton").click();
+          }
+      });
+
+      $("#chat-mainView").keyup(function(event){
+          if(event.keyCode == 27){
+              setTimeout(function(){
+                $("#chatdialog-openroom").hide();  
+              },10);   
+          }
+      });
+
+      $("#chatdialog-openroomtextbox").keyup(function(event){
+          if(event.keyCode == 13){
+              $("#chatdialog-openroombutton").click();
+          }
+      });
+
+      $("#chatdialog-cancelbutton").click(function(event){
+          setTimeout(function(){
+            $("#chatdialog-openroom").hide();  
+          },10);          
+      });
+
+      $("#chat-openbutton").click(function(event){
+          var mainView = $("#chat-mainView");
+          var mainViewPosition = mainView.position();
+              
+          $("#chatdialog-openroom").css({ position: "absolute",
+              marginLeft: 0, 
+              marginTop: 0,
+              top: mainViewPosition.top + 100,
+              left: mainViewPosition.left + 100
+          });
+
+          $("#chatdialog-openroomtextbox").val("");
+          $("#chatdialog-openroom").show();
+          $("#chatdialog-openroomtextbox").focus();
+      });
+
       CloudChat.api.openRoom("home")
       .onMessage(function(room,message){
         scrollMessagesDown(); 
+      });
+
+      CloudChat.EventManager.subscribe("roomopened",function(room){ 
+          scrollMessagesDown(); 
+          setTimeout(function(){
+              $("#chatdialog-openroom").hide();
+          },50);
       });
     });
   </script>
 </head>
 <body style="padding: 40px">    
-    <div data-ng-controller="CloudChat.LoginController">
+    <div id="chat-mainView" style="font-size:12px;" data-ng-controller="CloudChat.LoginController">
         <span data-ng-show="!loggedin" data-ng-click="login('guest')" style="cursor: pointer;display: inline-block;padding: 15px; width: 75px; height: 20px;border: 1px solid gray; display: none">guest</span>
     
-        <div data-ng-controller="CloudChat.UserController" style="display: none"></div>
-
         <div data-ng-show="loggedin" style="display: none; width: 600px ">
-          <div id="chat-messsages" data-ng-controller="CloudChat.ChatController" style="float: left;padding-bottom: 3px; overflow: auto; width: 400px; height: 250px; border: 1px solid #eaeaea; background-color: #F9F9F9">
+          <div id="chat-messsages" data-ng-controller="CloudChat.ChatController" style="float: left;padding-bottom: 3px; overflow: auto; width: 400px; height: 250px; border: 3px solid #eaeaea; background-color: #F9F9F9">
            <ul style="list-style-type: none; margin-left: -20px; margin-top: 0px; padding-right: 32px; padding-left: 32px;">
              <li data-ng-repeat="message in currentRoomMessages" style="float: left;">                    
                <div style="padding: 5px; margin-top: 3px; width: 370px">
                     <div>
-                      [{{ message.timestamp | date:"HH:mm:ss" }}] <span data-ng-style="{ 'color': (user.provider + user.id) == (message.userId + message.userProvider) && 'darkblue' || 'blue' }">{{ message.user }}<span>
+                      [{{ message.timestamp | date:"HH:mm:ss" }}] <span data-ng-style="{ 'color': ((user.provider + user.id) == (message.userId + message.userProvider)) && 'darkblue' || '#44bcee' }">{{ message.user }}<span>
                     </div>                   
                     <hr style="margin: 0px; padding: 0px; margin-bottom: 4px"/>
                     <div>
@@ -79,17 +172,43 @@
              </li>
            </ul>
           </div>
-          <div data-ng-controller="CloudChat.UsersController" style="height: 150px; float: right">
+          <div data-ng-controller="CloudChat.UsersController" style="overflow: auto;height: 250px; width: 200px; float: right; border: 3px solid #eaeaea; border-left: 0px solid; background-color: #F9F9F9">
             <ul style="list-style-type: none; margin-left: -38px; margin-top: 0px">                   
-                <li style="margin-left: 2px; margin-right: 2px; margin-top: 10px; background-color: #dddddd" data-ng-repeat="user in users">
+                <li style="margin-left: 2px; margin-right: 2px; margin-top: 10px; background-color: #DBDBDB" data-ng-repeat="user in users">
                     <img style="vertical-align:middle;" src="http://www.experienceourenergy.com.br/public/img/interface/icon-facebook.png" data-ng-show="user.provider == 'facebook'" ></img> 
                     <img style="vertical-align:middle;" src="http://www.videosoft.com.br/images/icn_google.png" data-ng-show="user.provider == 'google'"></img> 
-                    <img style="vertical-align:middle;" src="http://icons.iconarchive.com/icons/jeanette-foshee/simpsons-05/24/Simpsons-Family-Young-Abe-Simpson-icon.png" data-ng-show="user.provider == 'guest'"></img> 
-                    <a target="_blank" style="vertical-align:middle;text-decoration: none; color:inherit;" href="{{ user.link }}">{{ user.name }}</a>
+                    <img style="vertical-align:middle;" src="http://icons.iconarchive.com/icons/icons-land/vista-people/24/Person-Male-Light-icon.png" data-ng-show="user.provider == 'guest'"></img> 
+                    <a target="_blank" style="vertical-align:middle;text-decoration: none; color:inherit; font-weight: bold;" href="{{ user.link }}">{{ user.name }}</a>
                 </li>
             </ul>  
           </div>
-        </div>
+          <div data-ng-controller="CloudChat.UserController" style="width: 600px; border-top: 0px solid;">
+            <div style="width: 400px; float: left;border: 1px solid #eaeaea;border-top: 0px; padding-left: 3px">
+              <input id="chat-messagetextbox" ng-model="messageText" placeholder="Type your message here" type="text" style="width: 100%; outline: 0;border: 0px solid " />
+            </div>
+            <div class="button" id="chat-sendbutton" data-ng-click="send()" style="cursor: pointer; text-align: center; height: 20px; width: 200px;border: 1px solid #eaeaea; border-left: 0px solid; border-top: 0px solid; float: right; background-color: #DBDBDB">
+              <span>Send</span>
+            </div>
+          </div>          
+          <div data-ng-controller="CloudChat.RoomsController" style="width: 600px;border-top: 0px solid;">
+            <div style="width: 400px; float: left; background-color: #DBDBDB; height: 20px; border: 1px solid #eaeaea">
+              <ul style="list-style-type: none; margin-left: -30px; margin-top: 0px; padding-right: 32px; padding-left: 32px;">
+                  <li data-ng-style="{ 'background-color': room.active && 'gray' || 'white', 'color': room.active && 'white' || 'black' }" class="cloudchatroom" style="cursor: pointer; cursor: hand; border: 1px solid gray; float: left; padding-left: 5px; padding-right: 5px; margin-right: 5px" data-ng-repeat="room in rooms">
+                      <span data-ng-click="open(room)">{{ room.name }}</span> <span data-ng-click="close(room)">x</span>
+                  </li>                    
+              </ul>
+            </div>
+            <div class="button" id="chat-openbutton" style="cursor: pointer; text-align: center; height: 20px; width: 200px;border: 1px solid #eaeaea; border-left: 0px solid; border-top: 0px solid; float: right; background-color: #DBDBDB">
+              <span  >Open</span>
+              <div id="chatdialog-openroom" style="position: absolute; padding: 5px; border: 3px solid #DBDBDB; width: 250px; height:120px; display: none; background-color: #F9F9F9">
+                    <div>Open room</div></br>
+                    <input id="chatdialog-openroomtextbox" ng-model="roomname" placeholder="Type room name here" type="text" style="border: 1px solid #eaeaea; width: 200px; outline: 0; margin-bottom: 10px " />
+                    <span class="button" id="chatdialog-openroombutton" data-ng-click="open(roomname)" >open</span>
+                    <span class="button" id="chatdialog-cancelbutton" >cancel</span>
+              </div>   
+            </div>
+          </div>
+        </div>        
     </div>
 </body>
 </html>

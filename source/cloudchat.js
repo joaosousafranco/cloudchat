@@ -714,22 +714,24 @@
         });
 
         function checkPresence(presenceData){
-            realtimeClient.presence(presenceData,
-            function (error, result) {
-                $scope.users = [];
-                if (!error) {
-                    if(result.subscriptions > 0){
-                        for(var userIndex in result.metadata){
-                            var user = JSON.parse(userIndex);
-                            if(user.id != currentUser.id || user.provider != currentUser.provider){
-                                $scope.users.push(user);
-                            }                            
+            if(realtimeClient){
+                realtimeClient.presence(presenceData,
+                function (error, result) {
+                    $scope.users = [];
+                    if (!error) {
+                        if(result.subscriptions > 0){
+                            for(var userIndex in result.metadata){
+                                var user = JSON.parse(userIndex);
+                                if(user.id != currentUser.id || user.provider != currentUser.provider){
+                                    $scope.users.push(user);
+                                }                            
+                            }
                         }
+                        $scope.users.push(currentUser);                    
                     }
-                    $scope.users.push(currentUser);                    
-                }
-                $scope.$apply();
-            });
+                    $scope.$apply();
+                });    
+            }
         }
 
         CloudChat.EventManager.subscribe("closeroom",function(room){
@@ -739,7 +741,7 @@
         });
 
         CloudChat.EventManager.subscribe("openroom",function(room){  
-            if(!realtimeClient.getIsConnected()){
+            if(!realtimeClient || !realtimeClient.getIsConnected()){
                 subscriptionsBuffer.push(channelPrefix + room.name);
             } else {
                 subscribeChannel(channelPrefix + room.name);
