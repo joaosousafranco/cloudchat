@@ -94,6 +94,10 @@
       },50);
     }
 
+    CloudChat.api.onLoginFailed(function(provider){
+      alert("unable to login with " + provider);
+    });
+
     CloudChat.api.onLoggedin(function(user){
 
       $("#chat-messagetextbox").keyup(function(event){
@@ -114,12 +118,6 @@
           if(event.keyCode == 13){
               $("#chatdialog-openroombutton").click();
           }
-      });
-
-      $("#chatdialog-cancelbutton").click(function(event){
-          setTimeout(function(){
-            $("#chatdialog-openroom").hide();  
-          },10);          
       });
 
       $("#chat-openbutton").click(function(event){
@@ -153,9 +151,16 @@
   </script>
 </head>
 <body style="padding: 40px">    
-    <div id="chat-mainView" style="font-size:12px;" data-ng-controller="CloudChat.LoginController">
-        <span data-ng-show="!loggedin" data-ng-click="login('guest')" style="cursor: pointer;display: inline-block;padding: 15px; width: 75px; height: 20px;border: 1px solid gray; display: none">guest</span>
-    
+    <div id="chat-mainView" style="font-size:11px; font-family:Verdana;" data-ng-controller="CloudChat.LoginController">    
+        <div data-ng-show="!loggedin" style="display: none; width: 600px;border: 3px solid #eaeaea; background-color: #F9F9F9; height: 290px; padding-left: 230px; padding-top: 80px">
+          <div style="position: relative; left: -110px; font-size: 16px; margin-bottom: 15px">Login with you favorite network in cloudchat</div>
+          <div sytle="width: 300px; margin: 0 auto"> 
+            <img title="facebook" data-ng-click="login('facebook')" src="http://www.asimagens.com/i/dc86bb8cx.jpg" style="height: 48px;cursor: pointer; "/>
+            <img title="google" data-ng-click="login('google')" src="https://cdn1.iconfinder.com/data/icons/yooicons_set01_socialbookmarks/512/social_google_box.png" style="height: 48px;cursor: pointer "/>
+            <img title="guest" data-ng-click="login('guest')" src="http://icons.iconarchive.com/icons/visualpharm/icons8-metro-style/512/User-Role-Guest-icon.png" style="height: 48px;cursor: pointer "/>
+          </div>
+        </div>
+
         <div data-ng-show="loggedin" style="display: none; width: 600px ">
           <div id="chat-messsages" data-ng-controller="CloudChat.ChatController" style="float: left;padding-bottom: 3px; overflow: auto; width: 400px; height: 250px; border: 3px solid #eaeaea; background-color: #F9F9F9">
            <ul style="list-style-type: none; margin-left: -20px; margin-top: 0px; padding-right: 32px; padding-left: 32px;">
@@ -184,7 +189,7 @@
           </div>
           <div data-ng-controller="CloudChat.UserController" style="width: 600px; border-top: 0px solid;">
             <div style="width: 400px; float: left;border: 1px solid #eaeaea;border-top: 0px; padding-left: 3px">
-              <input id="chat-messagetextbox" ng-model="messageText" placeholder="Type your message here" type="text" style="width: 100%; outline: 0;border: 0px solid " />
+              <input id="chat-messagetextbox" ng-model="messageText" placeholder="Type your message here" type="text" style="width: 100%; outline: 0;border: 0px solid;height: 19px " />
             </div>
             <div class="button" id="chat-sendbutton" data-ng-click="send()" style="cursor: pointer; text-align: center; height: 20px; width: 200px;border: 1px solid #eaeaea; border-left: 0px solid; border-top: 0px solid; float: right; background-color: #DBDBDB">
               <span>Send</span>
@@ -204,7 +209,6 @@
                     <div>Open room</div></br>
                     <input id="chatdialog-openroomtextbox" ng-model="roomname" placeholder="Type room name here" type="text" style="border: 1px solid #eaeaea; width: 200px; outline: 0; margin-bottom: 10px " />
                     <span class="button" id="chatdialog-openroombutton" data-ng-click="open(roomname)" >open</span>
-                    <span class="button" id="chatdialog-cancelbutton" >cancel</span>
               </div>   
             </div>
           </div>
