@@ -271,12 +271,12 @@
     };
 
     Chat = function(){
-        var angularAppAttribute = $("html").attr("ng-app") || $("html").attr("data-ng-app");
-        if (typeof angularAppAttribute === 'undefined' || angularAppAttribute === false) {
-            $("html").attr("data-ng-app",""); 
-        }
+        Initializer.load(function(){   
+            var angularAppAttribute = $("html").attr("ng-app") || $("html").attr("data-ng-app");
+            if (typeof angularAppAttribute === 'undefined' || angularAppAttribute === false) {
+                $("html").attr("data-ng-app",""); 
+            }
 
-        Initializer.load(function(){        
             CloudChat.Chat.render();
             CloudChat.EventManager.publish("loaded");
         });
@@ -284,64 +284,70 @@
 
     Chat.prototype = {
         loginView : ''
-            +   '<div data-ng-style="{ \'display\': loggedin && \'none\' || \'table\' }" id="chat-loginView" data-ng-controller="CloudChat.LoginController" style="display: table; text-align: center;width: 100%; height: 100%; border: 1px solid gray">'
-            +   '   <h3 style="display: table-cell; vertical-align: middle;">Cloud Chat login with:</h3>'
-            +   '   <div style="display: table-cell; vertical-align: middle;">'
-            +   '       <span data-ng-click="login(\'facebook\')" style="cursor: pointer; display: inline-block;padding: 15px; width: 75px; height: 20px;border: 1px solid gray">facebook</span>'
-            +   '   </div>'
-            +   '   <div style="display: table-cell; vertical-align: middle;">'
-            +   '       <span id="googleLoginButton" data-ng-click="login(\'google\')" style="cursor: pointer;display: inline-block;padding: 15px; width: 75px; height: 20px;border: 1px solid gray">google+</span>'
-            +   '   </div>'
-            +   '   <div style="display: table-cell; vertical-align: middle;">'
-            +   '       <span data-ng-click="login(\'guest\')" style="cursor: pointer;display: inline-block;padding: 15px; width: 75px; height: 20px;border: 1px solid gray">guest</span>'
+            +   '<div data-ng-style="{ \'display\': loggedin && \'none\' || \'table\' }" id="chat-loginView" data-ng-controller="CloudChat.LoginController" style="font-size:11px; font-family:Verdana;display: table; text-align: center;width: 100%; height: 100%; border: 3px solid #eaeaea; background-color: #F9F9F9;">'
+            +   '   <h3 style="display: table-cell; vertical-align: middle;">Login with you favorite network in cloudchat</h3>'
+            +   '   <div style="display: table-cell; vertical-align: middle;"> '
+            +   '       <img title="facebook" data-ng-click="login(\'facebook\')" src="http://www.asimagens.com/i/dc86bb8cx.jpg" style="height: 48px;cursor: pointer; "/>'
+            +   '       <img title="google" data-ng-click="login(\'google\')" src="https://cdn1.iconfinder.com/data/icons/yooicons_set01_socialbookmarks/512/social_google_box.png" style="height: 48px;cursor: pointer "/>'
+            +   '       <img title="guest" data-ng-click="login(\'guest\')" src="http://icons.iconarchive.com/icons/visualpharm/icons8-metro-style/512/User-Role-Guest-icon.png" style="height: 48px;cursor: pointer "/>'
             +   '   </div>'
             +   '</div>'
         + '',
 
-        mainView : ''
-            +    '<table data-ng-show="loggedin" data-ng-controller="CloudChat.LoginController" id="chat-mainView" style="display: none;width: 100%; height: 100%; border-collapse: collapse; border: 1px solid gray">'
+        mainView : ''            
+            +    '<table data-ng-show="loggedin" data-ng-controller="CloudChat.LoginController" id="chat-mainView" style="font-size:11px; font-family:Verdana; display: none;width: 100%; height: 100%; border-collapse: collapse; border: 3px solid #eaeaea;background-color: #F9F9F9;">'
             +    '    <tr style="padding: 0;">'
-            +    '        <td style="padding: 0;height: 100%;border: 1px solid gray; vertical-align: bottom;">'
+            +    '        <td style="padding: 0;height: 100%;border: 3px solid #eaeaea; vertical-align: bottom;">'
             +    '            <div id="chat-messsages" data-ng-controller="CloudChat.ChatController" style="height: 100%; width: 100%; position: relative;bottom: 0px; overflow: auto;">'
-            +    '                <ul style="font-size:14px; list-style-type: none; margin-left: -38px; margin-top: 0px">'                    
+            +    '                <ul style="list-style-type: none; margin-left: -38px; margin-top: 0px">'                    
             +    '                  <li data-ng-repeat="message in currentRoomMessages">'
-            +    '                      {{ message.timestamp | date:"HH:mm:ss" }} <span style="color: blue">{{ message.user }}</span> : {{ message.content }}'
+            +    '                      <div style="padding: 5px; margin-top: 3px; padding-right: 20px">'
+            +    '                          <div style="margin-bottom: 2px">'
+            +    '                            [{{ message.timestamp | date:"HH:mm:ss" }}] <span data-ng-style="{ \'color\': ((user.provider + user.id) == (message.userId + message.userProvider)) && \'darkblue\' || \'#44bcee\' }">{{ message.user }}<span>'
+            +    '                          </div>                   '
+            +    '                          <hr style="margin: 0px; padding: 0px; margin-bottom: 4px"/>'
+            +    '                          <div>'
+            +    '                            {{ message.content }}'
+            +    '                          </div>'
+            +    '                     </div>'
             +    '                  </li>'                    
             +    '                </ul>'                    
             +    '            </div>'
             +    '        </td>'
-            +    '        <td data-ng-controller="CloudChat.UsersController" style="padding: 0;width: 150px; border: 1px solid gray; vertical-align:text-top;">'
-            +    '          <ul style="list-style-type: none; margin-left: -38px; margin-top: 0px">'                    
-            +    '              <li style="margin-left: 2px; margin-right: 2px; margin-top: 10px; background-color: #dddddd" data-ng-repeat="user in users">'
-            +    '                  <img style="vertical-align:middle;" src="http://www.experienceourenergy.com.br/public/img/interface/icon-facebook.png" data-ng-show="user.provider == \'facebook\'" ></img> '
-            +    '                  <img style="vertical-align:middle;" src="http://www.videosoft.com.br/images/icn_google.png" data-ng-show="user.provider == \'google\'"></img> '
-            +    '                  <img style="vertical-align:middle;" src="http://icons.iconarchive.com/icons/jeanette-foshee/simpsons-05/24/Simpsons-Family-Young-Abe-Simpson-icon.png" data-ng-show="user.provider == \'guest\'"></img> '
-            +    '                  <a target="_blank" style="vertical-align:middle;text-decoration: none; color:inherit;" href="{{ user.link }}">{{ user.name }}</a>'
-            +    '              </li>'                    
-            +    '          </ul>'  
+            +    '        <td data-ng-controller="CloudChat.UsersController" style="padding: 0;width: 200px; border: 3px solid #eaeaea; vertical-align:text-top;">'
+            +    '          <div style="overflow: auto; height: 100%;">'
+            +    '            <ul style="list-style-type: none; margin-left: -38px; margin-top: 0px; ">'                    
+            +    '                <li style="margin-left: 2px; margin-right: 2px; margin-top: 10px; background-color: #dddddd" data-ng-repeat="user in users">'
+            +    '                    <img style="vertical-align:middle;" src="http://www.experienceourenergy.com.br/public/img/interface/icon-facebook.png" data-ng-show="user.provider == \'facebook\'" ></img> '
+            +    '                    <img style="vertical-align:middle;" src="http://www.videosoft.com.br/images/icn_google.png" data-ng-show="user.provider == \'google\'"></img> '
+            +    '                    <img style="vertical-align:middle;" src="http://icons.iconarchive.com/icons/icons-land/vista-people/24/Person-Male-Light-icon.png" data-ng-show="user.provider == \'guest\'"></img> '
+            +    '                    <a target="_blank" style="vertical-align:middle;text-decoration: none; color:inherit;" href="{{ user.link }}">{{ user.name }}</a>'
+            +    '                </li>'                    
+            +    '            </ul>'  
+            +    '          </div>'
             +    '        </td>'
             +    '    </tr>'
             +    '    <tr style="padding: 0;" ng-model="user" data-ng-controller="CloudChat.UserController">'
-            +    '        <td style="padding: 0; border: 1px solid gray; padding: 0px 2px 0px 2px">'
-            +    '            <input id="chat-messagetextbox" ng-model="messageText" placeholder="Type your message here" type="text" style="border: 0px solid; width: 100%; outline: 0; " />'
+            +    '        <td style="padding: 0; border: 3px solid #eaeaea; padding: 0px 2px 0px 2px">'
+            +    '            <input id="chat-messagetextbox" ng-model="messageText" placeholder="Type your message as {{ user.name }} here" type="text" style="border: 0px solid; width: 100%; outline: 0; " />'
             +    '        </td>'
-            +    '        <td id="chat-sendbutton" data-ng-click="send()" style="cursor: pointer;padding: 0; border: 1px solid gray;text-align: center; ">'
+            +    '        <td id="chat-sendbutton" data-ng-click="send()" style="cursor: pointer;padding: 0; border: 3px solid #eaeaea;text-align: center; ">'
             +    '            Send'
             +    '        </td>'
             +    '    </tr>'
             +    '    <tr data-ng-controller="CloudChat.RoomsController">' 
-            +    '        <td style="height: 20px">'
+            +    '        <td style="height: 20px; background-color: #DBDBDB">'
             +    '          <ul style="list-style-type: none; margin-left: -30px; margin-top: 0px; padding-right: 32px; padding-left: 32px;">'                    
             +    '              <li data-ng-style="{ \'background-color\': room.active && \'gray\' || \'white\', \'color\': room.active && \'white\' || \'black\' }" class="cloudchatroom" style="cursor: pointer; cursor: hand; border: 1px solid gray; float: left; padding-left: 5px; padding-right: 5px; margin-right: 5px" data-ng-repeat="room in rooms">'
             +    '                  <span data-ng-click="open(room)">{{ room.name }}</span> <span data-ng-click="close(room)">x</span>' 
             +    '              </li>'                    
             +    '          </ul>'
             +    '        </td>'
-            +    '        <td id="chat-openbutton" style="cursor: pointer;padding: 0; border: 1px solid gray;text-align: center; ">'
+            +    '        <td id="chat-openbutton" style="cursor: pointer;padding: 0; border: 3px solid #eaeaea;text-align: center; ">'
             +    '            Open'
-            +    '            <div id="chatdialog-openroom" style="position: absolute; padding: 5px; border: 1px solid black; width: 250px; height:80px; display: none; background-color: white">'
+            +    '            <div id="chatdialog-openroom" style="position: absolute; padding: 5px; border: 3px solid #eaeaea; width: 250px; height:80px; display: none; background-color: #F9F9F9;">'
             +    '                  <div>Open room</div></br>'
-            +    '                  <input id="chatdialog-openroomtextbox" ng-model="roomname" placeholder="Type room name here" type="text" style="border: 1px solid black; width: 200px; outline: 0; " />'
+            +    '                  <input id="chatdialog-openroomtextbox" ng-model="roomname" placeholder="Type room name here" type="text" style="border: 3px solid #eaeaea; width: 200px; outline: 0; " />'
             +    '                  <span id="chatdialog-openroombutton" data-ng-click="open(roomname)" style="border: 1px solid black; padding-left: 5px; padding-right:5px">open</span>'
             +    '            </div>'   
             +    '        </td>'                     
@@ -353,6 +359,14 @@
             if($("#cloudchatcontainer") && $("#cloudchatcontainer").length){
                 $("#cloudchatcontainer").html(this.loginView + this.mainView);                
                 
+                $("#chat-mainView").keyup(function(event){
+                    if(event.keyCode == 27){
+                        setTimeout(function(){
+                            $("#chatdialog-openroom").hide();  
+                        },10);   
+                    }
+                });
+
                 $("#chat-messagetextbox").keyup(function(event){
                     if(event.keyCode == 13){
                         $("#chat-sendbutton").click();
@@ -378,6 +392,7 @@
 
                     $("#chatdialog-openroomtextbox").val("");
                     $("#chatdialog-openroom").show();
+                    $("#chatdialog-openroomtextbox").focus();
                 });
 
                 CloudChat.EventManager.subscribe("roomopened",function(room){ 
@@ -412,11 +427,21 @@
     CloudChat.Chat = new Chat();
 
     CloudChat.SecurityService = {
-        login : function(provider){
+        login : function(provider, customLogin){
             if(CloudChat[provider]){
                 CloudChat[provider].load(function(loggedUser){
                     if(loggedUser){
-                        CloudChat.EventManager.publish("loggedin",loggedUser);                       
+                        if(customLogin){
+                            customLogin(loggedUser,function(customUser){
+                                if(customUser){
+                                    CloudChat.EventManager.publish("loggedin",customUser);
+                                }else{
+                                    CloudChat.EventManager.publish("loginfailed",provider);               
+                                }
+                            });
+                        }else{
+                            CloudChat.EventManager.publish("loggedin",loggedUser);
+                        }
                     }else{
                         CloudChat.EventManager.publish("loginfailed",provider);   
                     }                
