@@ -197,6 +197,10 @@ CloudChat.UsersController
 		Name: users
 		Value: array
 
+	Methods:
+		Name: privateChat
+		parameters: user
+
 ### _Data Types_
 
 user
@@ -233,7 +237,7 @@ Message
 Peer 
 
 	{
-	    user : User,
+	    user : user,
 	    id : String,
 	    provider : String
 	}
