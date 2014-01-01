@@ -214,7 +214,8 @@ room
 
 	{ 
 		name: String, 
-		active: boolean
+		active: boolean,
+		id : String
 	}
 
 Message
@@ -226,10 +227,27 @@ Message
         user : String,
         userId : String,
         userProvider : String,
-        timestamp : integer,
-        peerId : String,
-        peerProvider : String
+        timestamp : integer
     }
+
+Peer 
+
+	{
+	    user : User,
+	    id : String,
+	    provider : String
+	}
+
+PeerChat 
+
+	{
+	    userId : String,
+	    peerId : String,
+	    roomId : String,
+	    timestamp : integer,
+	    user : String,
+	    peer : String
+	}
 
 ### _Storage Schema_
 	

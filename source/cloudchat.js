@@ -23,8 +23,6 @@
         this.user = data.user;   
         this.userId = data.userId; 
         this.userProvider = data.userProvider;
-        this.peerId = data.peerId;
-        this.peerProvider = data.peerProvider;
     }
 
     CloudChat.User = function(data){
