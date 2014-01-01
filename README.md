@@ -217,7 +217,7 @@ room
 		active: boolean
 	}
 
-message
+Message
 
 	{
 		room : String,
@@ -226,7 +226,9 @@ message
         user : String,
         userId : String,
         userProvider : String,
-        timestamp : integer
+        timestamp : integer,
+        peerId : String,
+        peerProvider : String
     }
 
 ### _Storage Schema_
@@ -242,6 +244,16 @@ Table _chat-messages_
 		userId (String)	
 		userProvider (String)
 
+Table _chat_peers_
+	
+	Primary: userId + userProvider (String)
+	Secondary: peerId + peerProvider (String)
+	Attributes:
+		roomId (String)
+		timestamp (Number)
+		user (String)
+		peer (String)
+
 ### _Methods_
 
 CloudChat.api.instance
@@ -254,7 +266,7 @@ CloudChat.api.login
 
 	Authenticates in cloud chat with the specified provider
 
-	Parameters: provider (string) (facebook, google, or guest)
+	Parameters: provider (string) (facebook, google, or guest), customLogin ( function(loggedUser, callback(customUser)) ) 
 	Returns: cloud chat api instance
 
 CloudChat.api.onLoggedin 

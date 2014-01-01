@@ -1,4 +1,64 @@
 (function (CloudChat, undefined) {
+    CloudChat.Strings = {
+        guid : function () {
+            var S4 = function () {
+                return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+            };
+            return (S4() + S4() + '-' + S4() + '-' + S4() + '-' + S4() + '-' + S4() + S4() + S4());
+        }
+    }
+})(window.CloudChat = window.CloudChat || {});
+
+(function (CloudChat, undefined) {
+    // Data Contracts
+    CloudChat.Message = function(data){
+        var currentDate = +new Date();
+        // Primary Key
+        this.room = data.room;  
+        // Secondary Key
+        this.id = currentDate + '-' + CloudChat.Strings.guid();  
+        // Attributes
+        this.content = data.content;    
+        this.timestamp = currentDate;  
+        this.user = data.user;   
+        this.userId = data.userId; 
+        this.userProvider = data.userProvider;
+        this.peerId = data.peerId;
+        this.peerProvider = data.peerProvider;
+    }
+
+    CloudChat.User = function(data){
+        this.name = data.name;
+        this.provider = data.provider;
+        this.email = data.email;
+        this.link = data.link;
+        this.id = data.id;
+        this.token = data.token;
+    }
+
+    CloudChat.Room = function(data){
+        this.name = data.name;
+        this.active = data.active;
+        this.id = data.id;
+    }
+
+    CloudChat.Peer = function(data){
+        this.user = data.user;
+        this.id = data.id;
+        this.provider = data.provider;
+    }
+
+    CloudChat.PeerChat = function(data){
+        this.userId = data.user.id + data.user.provider;
+        this.peerId = data.peer.id + data.peer.provider;
+        this.roomId = data.roomId;
+        this.timestamp = data.timestamp;
+        this.user = data.user.name;
+        this.peer = data.peer.user.name;
+    }
+})(window.CloudChat = window.CloudChat || {});
+
+(function (CloudChat, undefined) {
     CloudChat.setup = {
         security : {
             facebook : {
@@ -20,20 +80,6 @@
         }        
     }
 })(window.CloudChat = window.CloudChat || {});
-
-
-(function (CloudChat, undefined) {
-    CloudChat.Strings = {
-        guid : function () {
-            var S4 = function () {
-                return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
-            };
-            return (S4() + S4() + '-' + S4() + '-' + S4() + '-' + S4() + '-' + S4() + S4() + S4());
-        }
-    }
-})(window.CloudChat = window.CloudChat || {});
-
-
 
 (function (CloudChat, undefined) {
     var EventEmitter = function(){
@@ -107,14 +153,14 @@
             gapi.client.load('oauth2', 'v2', function() {
                 var request = gapi.client.oauth2.userinfo.get();
                 request.execute(function(result){
-                    CloudChat.google.loaded({
+                    CloudChat.google.loaded(new CloudChat.User({
                         name : result.name,
                         provider : 'google',
                         email : result.email,
                         link : result.link,
                         id : result.id,
                         token : authResult['access_token']
-                    });
+                    }));
                 });
             });
         }else {
@@ -142,14 +188,14 @@
 (function (CloudChat, undefined) {
     CloudChat.guest = {
         load : function(callback){
-            callback({
+            callback(new CloudChat.User({
                 name : "guest",
                 provider : 'guest',
                 email : null,
                 link : null,
                 id : CloudChat.Strings.guid(),
                 token : CloudChat.Strings.guid()
-            });
+            }));
         }
     }
 })(window.CloudChat = window.CloudChat || {});
@@ -194,14 +240,14 @@
 
         getUser : function(token,callback){
             FB.api('/me', function(response) {                
-                callback({
+                callback(new CloudChat.User({
                     name : response.name,
                     provider : 'facebook',
                     id : response.id,
                     email : response.email,
                     link : response.link,
                     token : token
-                });
+                }));
             });
         }
     }
@@ -303,7 +349,7 @@
             +    '                  <li data-ng-repeat="message in currentRoomMessages">'
             +    '                      <div style="padding: 5px; margin-top: 3px; padding-right: 20px">'
             +    '                          <div style="margin-bottom: 2px">'
-            +    '                            [{{ message.timestamp | date:"HH:mm:ss" }}] <span data-ng-style="{ \'color\': ((user.provider + user.id) == (message.userId + message.userProvider)) && \'darkblue\' || \'#44bcee\' }">{{ message.user }}<span>'
+            +    '                            [{{ message.timestamp | date:"HH:mm:ss" }}] <span data-ng-style="{ \'color\': (((user.provider + user.id) == (message.userId + message.userProvider)) && \'darkblue\') || \'#44bcee\' }">{{ message.user }}<span>'
             +    '                          </div>                   '
             +    '                          <hr style="margin: 0px; padding: 0px; margin-bottom: 4px"/>'
             +    '                          <div>'
@@ -316,12 +362,14 @@
             +    '        </td>'
             +    '        <td data-ng-controller="CloudChat.UsersController" style="padding: 0;width: 200px; border: 3px solid #eaeaea; vertical-align:text-top;">'
             +    '          <div style="overflow: auto; height: 100%;">'
+            +    '            <span style="margin-left: 2px; margin-right: 2px; margin-top: 10px;" data-ng-show="users.length < 1">Retrieving room users...</span>'
             +    '            <ul style="list-style-type: none; margin-left: -38px; margin-top: 0px; ">'                    
             +    '                <li style="margin-left: 2px; margin-right: 2px; margin-top: 10px; background-color: #dddddd" data-ng-repeat="user in users">'
             +    '                    <img style="vertical-align:middle;" src="http://www.experienceourenergy.com.br/public/img/interface/icon-facebook.png" data-ng-show="user.provider == \'facebook\'" ></img> '
             +    '                    <img style="vertical-align:middle;" src="http://www.videosoft.com.br/images/icn_google.png" data-ng-show="user.provider == \'google\'"></img> '
             +    '                    <img style="vertical-align:middle;" src="http://icons.iconarchive.com/icons/icons-land/vista-people/24/Person-Male-Light-icon.png" data-ng-show="user.provider == \'guest\'"></img> '
-            +    '                    <a target="_blank" style="vertical-align:middle;text-decoration: none; color:inherit;" href="{{ user.link }}">{{ user.name }}</a>'
+            +    '                    <a target="_blank" style="font-size: 11px;vertical-align:middle;text-decoration: none; color:inherit;" href="{{ user.link }}">{{ user.name }}</a>'
+            +    '                    <img data-ng-click="privateChat(user)" title="private chat with {{ user.name }}" style="cursor: pointer;vertical-align:middle; float: right; margin-top: 2px; margin-left: 2px" src="http://www.balletjorgencanada.ca/site/ywd_prototype/display/icon_comment24x24.png"></img>'
             +    '                </li>'                    
             +    '            </ul>'  
             +    '          </div>'
@@ -413,7 +461,13 @@
 
                 CloudChat.EventManager.subscribe("loggedin",function(user){  
                     setTimeout(function(){
-                        CloudChat.EventManager.publish("openroom",{ name: "home", active: true } );                
+                        CloudChat.EventManager.publish("openroom",new CloudChat.Room(
+                            { 
+                                name: "home", 
+                                active: true,
+                                id : "home" 
+                            })
+                        );                
                     },10);                                      
                 });
 
@@ -453,11 +507,11 @@
     }
 
     CloudChat.RealtimeStorageService = function(configuration){
-        var roomsTableRefs = {};        
-        var initialChunk = CloudChat.setup.storage.initialChunk;        
-        var order = CloudChat.setup.storage.order;
+        this.roomsTableRefs = {};        
+        this.initialChunk = CloudChat.setup.storage.initialChunk;        
+        this.order = CloudChat.setup.storage.order;
 
-        var client = Realtime.Storage.create(
+        this.client = Realtime.Storage.create(
             configuration,
             null,
             function(error){
@@ -466,28 +520,35 @@
         );
 
         CloudChat.EventManager.subscribe("savemessage",function(message){
-            if(message && message.content && message.room){
-                var messagesTableRef = client.table("chat-messages");
-
-                messagesTableRef.push(message,null
-                ,function(error){
-                    console.log("Error in saving message:",error);
-                }.bind(this));     
-            }
+            this.saveMessage(message);
         }.bind(this));
 
         CloudChat.EventManager.subscribe("openroom",function(room){
+            this.openRoom(room);
+        }.bind(this));
+
+        CloudChat.EventManager.subscribe("openpeerroom",function(room,user,peer){
+            this.openPeerRoom(room,user,peer);
+        }.bind(this));
+
+        CloudChat.EventManager.subscribe("closeroom",function(room){
+            this.closeRoom(room);
+        }.bind(this));
+    }
+
+    CloudChat.RealtimeStorageService.prototype = {
+        openRoom : function(room){
             var messagesTableRef;
 
-            if(!roomsTableRefs[room.name]){
-                roomsTableRefs[room.name] = messagesTableRef = client.table("chat-messages").equals({item: "room", value: room.name });
+            if(!this.roomsTableRefs[room.id]){
+                this.roomsTableRefs[room.id] = messagesTableRef = this.client.table("chat-messages").equals({item: "room", value: room.id });
 
-                if(initialChunk > 0){
-                    roomsTableRefs[room.name] = messagesTableRef = messagesTableRef.limit(initialChunk);                    
+                if(this.initialChunk > 0){
+                    this.roomsTableRefs[room.id] = messagesTableRef = messagesTableRef.limit(this.initialChunk);                    
                 }
 
-                if(order && messagesTableRef[order]){
-                    roomsTableRefs[room.name] = messagesTableRef = messagesTableRef[order]();                    
+                if(this.order && messagesTableRef[this.order]){
+                    this.roomsTableRefs[room.id] = messagesTableRef = messagesTableRef[this.order]();                    
                 }
 
                 messagesTableRef.on("put",function(itemSnapshot){            
@@ -496,19 +557,83 @@
                     }            
                 });
             }
-        }.bind(this));
+        },
 
-        CloudChat.EventManager.subscribe("closeroom",function(room){
+        openPeerRoom : function(room,user,peer){
+            var userId = user.id + user.provider;
+            var peerId = peer.id + peer.provider;
+
+            this.client.table("chat-peers").item({
+                primary : userId,
+                secondary : peerId
+            }).get(function(itemSnapshot){
+                if(itemSnapshot){
+                    room.id = itemSnapshot.val().roomId;
+                }else{
+                    var roomId = this.createPeerRoom(user,peer);
+                    room.id = roomId;
+                }
+
+                CloudChat.EventManager.publish("openroom",room);
+            }.bind(this));
+        },
+
+        createPeerRoom : function(user,peer){
+            var timestamp = +new Date();
+            var peerRoomId = CloudChat.Strings.guid();
+            var userToPeerChat = new CloudChat.PeerChat({
+                user : user,
+                peer : peer,
+                roomId : peerRoomId,
+                timestamp : timestamp
+            });
+
+            var userAsPeer = new CloudChat.Peer({
+                user : user,
+                id : user.id,
+                provider : user.provider
+            });
+            var peerToUserChat = new CloudChat.PeerChat({
+                user : peer.user,
+                peer : userAsPeer,
+                roomId : peerRoomId,
+                timestamp : timestamp
+            });
+
+            this.client.table("chat-peers").push(userToPeerChat,null,
+                function(error){
+                    console.error("Failed to create chat peer:",userToPeerChat,"error",error);
+                });
+            this.client.table("chat-peers").push(peerToUserChat,null,
+                function(error){
+                    console.error("Failed to create chat peer:",peerToUserChat,"error",error);
+                });
+
+            return peerRoomId;
+        },
+
+        closeRoom : function(room){
             var messagesTableRef;
 
-            if(roomsTableRefs[room.name]){
-                messagesTableRef = roomsTableRefs[room.name];
+            if(this.roomsTableRefs[room.name]){
+                messagesTableRef = this.roomsTableRefs[room.name];
                 messagesTableRef.off("put",room.name);
-                delete roomsTableRefs[room.name];
+                delete this.roomsTableRefs[room.name];
             }
 
             CloudChat.EventManager.publish("closedroom", room);
-        }.bind(this));
+        },
+
+        saveMessage : function(message){
+            if(message && message.content && message.room){
+                var messagesTableRef = this.client.table("chat-messages");
+
+                messagesTableRef.push(message,null
+                ,function(error){
+                    console.error("Error in saving message:",error);
+                }.bind(this));     
+            }
+        }
     }
 
     CloudChat.LoginController = function($scope){ 
@@ -555,15 +680,13 @@
         });
 
         CloudChat.EventManager.subscribe("sendmessage",function(text){
-            var message = {
+            var message = new CloudChat.Message({
                 content : text,
                 user : $scope.user.name,
                 userId : $scope.user.id,
                 userProvider : $scope.user.provider,
-                timestamp : +new Date(),
-                room : $scope.currentRoom,
-                id : (+new Date()) + '-' + CloudChat.Strings.guid() 
-            };
+                room : $scope.currentRoom                
+            });
             CloudChat.EventManager.publish("savemessage",message);
         });
 
@@ -580,16 +703,16 @@
         });
 
         CloudChat.EventManager.subscribe("openroom",function(room){            
-            $scope.currentRoom = room.name;
-            if(!$scope.messages[room.name]){
-                $scope.messages[room.name] = [];
+            $scope.currentRoom = room.id;
+            if(!$scope.messages[room.id]){
+                $scope.messages[room.id] = [];
             }
-            $scope.currentRoomMessages = $scope.messages[room.name];
+            $scope.currentRoomMessages = $scope.messages[room.id];
         });
 
         CloudChat.EventManager.subscribe("closeroom",function(room){
-            if($scope.messages[room.name]){
-                delete $scope.messages[room.name];
+            if($scope.messages[room.id]){
+                delete $scope.messages[room.id];
             }
             $scope.currentRoom = null;
             $scope.currentRoomMessages = [];
@@ -601,14 +724,14 @@
     }
 
     CloudChat.RoomsController = function($scope){
-        $scope.rooms = [];
+        $scope.rooms = [];        
 
         function isRoomOpened(room){
             var result = false;
 
             for(var roomIndex in $scope.rooms){
                 var roomItem = $scope.rooms[roomIndex];
-                if(room.name == roomItem.name){
+                if(room.id == roomItem.id){
                     result = true;
                     break;
                 }
@@ -654,7 +777,8 @@
                 }else{
                     CloudChat.EventManager.publish("openroom",{
                         name : room,
-                        active : true
+                        active : true,
+                        id : room
                     }); 
                 }
             } 
@@ -670,77 +794,70 @@
         var subscriptionsBuffer = [];
         var presenceInterval = null;
 
+        $scope.privateChat = function(user){
+            var peer = new CloudChat.Peer({
+                user : user,
+                id : user.id,
+                provider : user.provider
+            });
+
+            var room = new CloudChat.Room({
+                name : peer.user.name,
+                active : true
+            });
+
+            CloudChat.EventManager.publish("openpeerroom",room,currentUser,peer);
+        }
+
         function subscribeChannel(channel){
             if(!realtimeClient.isSubscribed(channel)){
                 realtimeClient.subscribe(channel,true,function(sender,channel,message){
-                    var subscribedUser = JSON.parse(message);
-                    if(subscribedUser.id != currentUser.id || subscribedUser.provider != currentUser.provider){
-                        var userfound = false;
-                        for(var userIndex in $scope.users){
-                            var user = $scope.users[userIndex];
-                            if(user.id == subscribedUser.id && user.provider == subscribedUser.provider){
-                                userfound = true;
-                                break;
-                            }                            
-                        }
-
-                        if(!userfound){
-                            $scope.users.push(subscribedUser);
-                            $scope.$apply();
-                        }
-                    }                    
+                                
                 });
-                realtimeClient.send(channel,JSON.stringify(currentUser));
             }
         }
 
+        CloudChat.EventManager.subscribe("loggedin",function(user){
+            loadOrtcFactory(IbtRealTimeSJType, function (factory, error) {
+                if (error != null) {
+                    console.error("Factory error: " + error.message);
+                } else {
 
-        var loadRealtimeInterval = setInterval(function(){
-            if(IbtRealTimeSJType){
-                clearInterval(loadRealtimeInterval);
-                loadOrtcFactory(IbtRealTimeSJType, function (factory, error) {
-                    if (error != null) {
-                        console.error("Factory error: " + error.message);
-                    } else {
+                    if (factory != null && !realtimeClient) {                    
+                        realtimeClient = factory.createClient();                
 
-                        if (factory != null) {                    
-                            realtimeClient = factory.createClient();                
+                        currentUser = {
+                            name : user.name,
+                            provider : user.provider,
+                            id : user.id,
+                            link : user.link                           
+                        };
+                        realtimeClient.setConnectionMetadata(JSON.stringify(currentUser));
+                        realtimeClient.setClusterUrl(CloudChat.setup.realtime.url);
 
-                            CloudChat.EventManager.subscribe("loggedin",function(user){
-                                currentUser = {
-                                    name : user.name,
-                                    provider : user.provider,
-                                    id : user.id,
-                                    link : user.link                           
-                                };
-                                realtimeClient.setConnectionMetadata(JSON.stringify(currentUser));
-                                realtimeClient.setClusterUrl(CloudChat.setup.realtime.url);
+                        realtimeClient.onException = function (ortc, exception) {
+                            console.error(exception);
+                        };
 
-                                realtimeClient.onException = function (ortc, exception) {
-                                    console.error(exception);
-                                };
+                        realtimeClient.onConnected = function (ortc) {
+                            while(subscriptionsBuffer.length > 0){
+                                var channel = subscriptionsBuffer.shift();
+                                subscribeChannel(channel);
+                            }                            
+                        };
 
-                                realtimeClient.onConnected = function (ortc) {
-                                    while(subscriptionsBuffer.length > 0){
-                                        var channel = subscriptionsBuffer.shift();
-                                        subscribeChannel(channel);
-                                    }                            
-                                };
+                        realtimeClient.onReconnected = function (ortc) {
+                            while(subscriptionsBuffer.length > 0){
+                                var channel = subscriptionsBuffer.shift();
+                                subscribeChannel(channel);
+                            }                            
+                        };
 
-                                realtimeClient.onReconnected = function (ortc) {
-                                    while(subscriptionsBuffer.length > 0){
-                                        var channel = subscriptionsBuffer.shift();
-                                        subscribeChannel(channel);
-                                    }                            
-                                };
-
-                                realtimeClient.connect(CloudChat.setup.realtime.applicationKey,CloudChat.setup.realtime.token);
-                            });
-                        }
-                    }                                
-                });
-            }
-        },100);
+                        realtimeClient.connect(CloudChat.setup.realtime.applicationKey,CloudChat.setup.realtime.token);
+                    }
+                } 
+            });
+        });
 
         function checkPresence(presenceData){
             if(realtimeClient){
@@ -764,32 +881,37 @@
         }
 
         CloudChat.EventManager.subscribe("closeroom",function(room){
-            if (realtimeClient.isSubscribed(channelPrefix + room.name)){
-                realtimeClient.unsubscribe(channelPrefix + room.name);
+            var channel = channelPrefix + room.id;
+            if (realtimeClient.isSubscribed(channel)){
+                realtimeClient.unsubscribe(channel);
             }
         });
 
         CloudChat.EventManager.subscribe("openroom",function(room){  
-            if(!realtimeClient || !realtimeClient.getIsConnected()){
-                subscriptionsBuffer.push(channelPrefix + room.name);
-            } else {
-                subscribeChannel(channelPrefix + room.name);
-            }
+            setTimeout(function(){
+                var channel = channelPrefix + room.id;
 
-            var presenceData = {
-                applicationKey: CloudChat.setup.realtime.applicationKey,
-                authenticationToken: CloudChat.setup.realtime.token,
-                isCluster: true,
-                url: CloudChat.setup.realtime.url,
-                channel: channelPrefix + room.name
-            };
+                if(!realtimeClient || !realtimeClient.getIsConnected()){
+                    subscriptionsBuffer.push(channel);
+                } else {
+                    subscribeChannel(channel);
+                }
 
-            clearInterval(presenceInterval);
-            checkPresence(presenceData);
+                var presenceData = {
+                    applicationKey: CloudChat.setup.realtime.applicationKey,
+                    authenticationToken: CloudChat.setup.realtime.token,
+                    isCluster: true,
+                    url: CloudChat.setup.realtime.url,
+                    channel: channel
+                };
 
-            presenceInterval = setInterval(function(){
+                clearInterval(presenceInterval);
                 checkPresence(presenceData);
-            }, 60 * 1000);            
+
+                presenceInterval = setInterval(function(){
+                    checkPresence(presenceData);
+                }, 60 * 1000); 
+            },10);     
         });
     }
 
@@ -875,9 +997,9 @@
     };
 
     Api.prototype = {
-        login : function(provider){
+        login : function(provider,customLogin){
             setTimeout(function(){
-                CloudChat.SecurityService.login(provider);
+                CloudChat.SecurityService.login(provider,customLogin);
             },1);            
 
             return this;
@@ -914,15 +1036,13 @@
 
         sendMessage : function(user,room,messageText){
             setTimeout(function(){
-                var message = {
+                var message = new CloudChat.Message({
                     content : messageText,
                     user : user.name,
                     userId : user.id,
                     userProvider : user.provider,
-                    timestamp : +new Date(),
-                    room : room,
-                    id : (+new Date()) + '-' + CloudChat.Strings.guid() 
-                };
+                    room : room
+                });
                 CloudChat.EventManager.publish("savemessage",message);
             },1);            
             return this;
@@ -944,8 +1064,8 @@
             return Api.getInstance();
         },
 
-        login : function(provider){
-            return Api.getInstance().login(provider);
+        login : function(provider,customLogin){
+            return Api.getInstance().login(provider,customLogin);
         },
 
         openRoom : function(name){
