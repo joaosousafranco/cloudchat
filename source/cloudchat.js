@@ -517,6 +517,26 @@
             }
         );
 
+        CloudChat.EventManager.subscribe("loggedin",function(user){
+            var userId = user.id + user.provider;
+
+            this.client.table("chat-peers").
+            equals({item : "userId", value: userId}).on("put",function(itemSnapshot){
+                if(itemSnapshot){
+                    var isReady = false;
+                    this.client.table("chat-messages").
+                    equals({item : "room", value: itemSnapshot.val().roomId}).limit(0).on("put",function(itemSnapshot){
+                        if(isReady && itemSnapshot && itemSnapshot.val()){
+                            CloudChat.EventManager.publish("roommessage",itemSnapshot.val());    
+                            CloudChat.EventManager.publish("receivedmessage",itemSnapshot.val());
+                        } else if(!isReady) {
+                            isReady = itemSnapshot == null;
+                        }
+                    }.bind(this));
+                }
+            }.bind(this));
+        }.bind(this));
+
         CloudChat.EventManager.subscribe("savemessage",function(message){
             this.saveMessage(message);
         }.bind(this));
@@ -640,7 +660,7 @@
             $scope.loggedin = true; 
         });    
 
-        $scope.login = function(provider){
+        $scope.login = function(provider){  
             CloudChat.SecurityService.login(provider);
         };       
     }
@@ -648,13 +668,13 @@
     CloudChat.UserController = function($scope){ 
         $scope.user = null;
 
+        new CloudChat.RealtimeStorageService({
+            applicationKey: CloudChat.setup.realtime.applicationKey,
+            authenticationToken: CloudChat.setup.realtime.token, 
+        }); 
+
         CloudChat.EventManager.subscribe("loggedin",function(user){
             $scope.user = user;
-
-            new CloudChat.RealtimeStorageService({
-                applicationKey: CloudChat.setup.realtime.applicationKey,
-                authenticationToken: CloudChat.setup.realtime.token, 
-            }); 
 
             if(!$scope.$$phase) {
                 $scope.$apply();
@@ -754,6 +774,18 @@
             if(!$scope.$$phase) {
                 $scope.$apply();
             }                     
+        });
+
+        CloudChat.EventManager.subscribe("roommessage",function(message){  
+            var room = new CloudChat.Room({
+                name : message.user,
+                active : true,
+                id : message.room
+            });
+
+            if(!isRoomOpened(room)){
+                CloudChat.EventManager.publish("openroom",room); 
+            }
         });
 
         $scope.close = function(room){            

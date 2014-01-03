@@ -7,7 +7,7 @@ Cloud chat is a javascript chat library that uses _angularjs_ ( http://angularjs
 
 Authentication is provided by _facebook_ api and _google_ api. Looking forward to add more providers.
 
-You can check a live sample here: http://howdoyouphil.blogspot.pt/
+You can check a live sample here: http://mrshogun.tumblr.com/
 
 
 ## **Getting started**
