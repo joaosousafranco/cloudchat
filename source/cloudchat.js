@@ -254,12 +254,11 @@
 (function (CloudChat, undefined) {
     var externalTools = [
         'http://connect.facebook.net/en_US/all.js',
-        'https://apis.google.com/js/client.js',        
-        'http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js'
+        'https://apis.google.com/js/client.js'
     ];
 
     if((typeof angular == typeof undefined) || (angular && angular.version.full != "1.0.8")){
-        externalTools.push('https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js');
+        externalTools.push('https://ajax.googleapis.com/ajax/libs/angularjs/1.2.9/angular.min.js');
     }
 
     if((typeof jQuery == typeof undefined) || (jQuery && jQuery.fn.jquery != "2.0.3")){
@@ -339,10 +338,10 @@
         + '',
 
         mainView : ''            
-            +    '<table data-ng-show="loggedin" data-ng-controller="CloudChat.LoginController" id="chat-mainView" style="font-size:11px; font-family:Verdana; display: none;width: 100%; height: 100%; border-collapse: collapse; border: 3px solid #eaeaea;background-color: #F9F9F9;">'
+            +    '<table data-ng-show="loggedin" data-ng-controller="CloudChat.LoginController" id="chat-mainView" style="font-size:11px; font-family:Verdana;width: 100%; height: 100%; border-collapse: collapse; border: 3px solid #eaeaea;background-color: #F9F9F9;">'
             +    '    <tr style="padding: 0;">'
             +    '        <td style="padding: 0;height: 100%;border: 3px solid #eaeaea; vertical-align: bottom;">'
-            +    '            <div id="chat-messsages" data-ng-controller="CloudChat.ChatController" style="height: 100%; width: 100%; position: relative;bottom: 0px; overflow: auto;">'
+            +    '            <div id="chat-messages" data-ng-controller="CloudChat.ChatController" style="height: 100%; width: 100%; position: relative;bottom: 0px; overflow: auto;">'
             +    '                <ul style="list-style-type: none; margin-left: -38px; margin-top: 0px">'                    
             +    '                  <li data-ng-repeat="message in currentRoomMessages">'
             +    '                      <div style="padding: 5px; margin-top: 3px; padding-right: 20px">'
@@ -449,7 +448,7 @@
 
                 CloudChat.EventManager.subscribe("receivedmessage",function(message){            
                     setTimeout(function(){
-                        var $target = $('#chat-messsages'); 
+                        var $target = $('#chat-messages'); 
                         $target.animate({scrollTop: $target.height()}, 1000);
                         setTimeout(function(){
                             $target.stop();
@@ -593,6 +592,7 @@
                 }
 
                 CloudChat.EventManager.publish("openroom",room);
+                CloudChat.EventManager.publish("peerroomopened",room);          
             }.bind(this));
         },
 
@@ -633,10 +633,10 @@
         closeRoom : function(room){
             var messagesTableRef;
 
-            if(this.roomsTableRefs[room.name]){
-                messagesTableRef = this.roomsTableRefs[room.name];
-                messagesTableRef.off("put",room.name);
-                delete this.roomsTableRefs[room.name];
+            if(this.roomsTableRefs[room.id]){
+                messagesTableRef = this.roomsTableRefs[room.id];
+                messagesTableRef.off("put",room.id);
+                delete this.roomsTableRefs[room.id];
             }
 
             CloudChat.EventManager.publish("closedroom", room);
@@ -656,6 +656,12 @@
 
     CloudChat.LoginController = function($scope){ 
         $scope.loggedin = false;
+
+        CloudChat.RealtimeStorageService.instance = new CloudChat.RealtimeStorageService({
+            applicationKey: CloudChat.setup.realtime.applicationKey,
+            authenticationToken: CloudChat.setup.realtime.token, 
+        }); 
+
         CloudChat.EventManager.subscribe("loggedin",function(user){
             $scope.loggedin = true; 
         });    
@@ -667,11 +673,6 @@
 
     CloudChat.UserController = function($scope){ 
         $scope.user = null;
-
-        new CloudChat.RealtimeStorageService({
-            applicationKey: CloudChat.setup.realtime.applicationKey,
-            authenticationToken: CloudChat.setup.realtime.token, 
-        }); 
 
         CloudChat.EventManager.subscribe("loggedin",function(user){
             $scope.user = user;
@@ -703,7 +704,7 @@
                 user : $scope.user.name,
                 userId : $scope.user.id,
                 userProvider : $scope.user.provider,
-                room : $scope.currentRoom                
+                room : $scope.currentRoom ? $scope.currentRoom.id : null
             });
             CloudChat.EventManager.publish("savemessage",message);
         });
@@ -721,7 +722,7 @@
         });
 
         CloudChat.EventManager.subscribe("openroom",function(room){            
-            $scope.currentRoom = room.id;
+            $scope.currentRoom = room;
             if(!$scope.messages[room.id]){
                 $scope.messages[room.id] = [];
             }
@@ -784,6 +785,9 @@
             });
 
             if(!isRoomOpened(room)){
+                if(room.id != room.name){
+                    CloudChat.EventManager.publish("peerroomopened",room);
+                }
                 CloudChat.EventManager.publish("openroom",room); 
             }
         });
@@ -819,7 +823,7 @@
     CloudChat.UsersController = function($scope){
         $scope.users = [];        
         var channelPrefix = "cloudchat:";
-        var currentUser = null;
+        $scope.currentUser = currentUser = null;
         var realtimeClient = null;
         var subscriptionsBuffer = [];
         var presenceInterval = null;
@@ -848,6 +852,17 @@
         }
 
         CloudChat.EventManager.subscribe("loggedin",function(user){
+            $scope.currentUser = currentUser = {
+                name : user.name,
+                provider : user.provider,
+                id : user.id,
+                link : user.link                           
+            };
+
+            if(!$scope.$$phase) {
+                $scope.$apply();
+            } 
+
             loadOrtcFactory(IbtRealTimeSJType, function (factory, error) {
                 if (error != null) {
                     console.error("Factory error: " + error.message);
@@ -856,14 +871,15 @@
                     if (factory != null && !realtimeClient) {                    
                         realtimeClient = factory.createClient();                
 
-                        currentUser = {
-                            name : user.name,
-                            provider : user.provider,
-                            id : user.id,
-                            link : user.link                           
-                        };
+                        realtimeClient.setHeartbeatActive(true);
+                        realtimeClient.setHeartbeatTime(5*60);
+                        realtimeClient.setHeartbeatFails(1);
                         realtimeClient.setConnectionMetadata(JSON.stringify(currentUser));
-                        realtimeClient.setClusterUrl(CloudChat.setup.realtime.url);
+                        if(CloudChat.setup.realtime.directUrl){
+                            realtimeClient.setUrl(CloudChat.setup.realtime.directUrl);  
+                        }else{
+                            realtimeClient.setClusterUrl(CloudChat.setup.realtime.url);  
+                        }
 
                         realtimeClient.onException = function (ortc, exception) {
                             console.error(exception);
